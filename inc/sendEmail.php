@@ -5,7 +5,7 @@ $siteOwnersEmail = 'user@website.com';
 
 
 if($_POST) {
-
+	$to = "maisumalague.com"; 
    $name = trim(stripslashes($_POST['contactName']));
    $email = trim(stripslashes($_POST['contactEmail']));
    $subject = trim(stripslashes($_POST['contactSubject']));
