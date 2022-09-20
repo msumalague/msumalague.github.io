@@ -1,11 +1,10 @@
 ﻿<?php
 
 // Replace this with your own email address
-$siteOwnersEmail = 'user@website.com';
+$siteOwnersEmail = 'maisumalague@gmail.com';
 
 
-if($_POST) {
-	$to = "maisumalague.com"; 
+if($_POST['submitform']) {
    $name = trim(stripslashes($_POST['contactName']));
    $email = trim(stripslashes($_POST['contactEmail']));
    $subject = trim(stripslashes($_POST['contactSubject']));
