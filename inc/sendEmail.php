@@ -4,7 +4,7 @@
 $siteOwnersEmail = 'maisumalague@gmail.com';
 
 
-if($_POST['submitform']) {
+if($_POST['submit']) {
    $name = trim(stripslashes($_POST['contactName']));
    $email = trim(stripslashes($_POST['contactEmail']));
    $subject = trim(stripslashes($_POST['contactSubject']));
