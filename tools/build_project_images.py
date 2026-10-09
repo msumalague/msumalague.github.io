@@ -18,11 +18,8 @@ OUT.mkdir(parents=True, exist_ok=True)
 JOBS = {
     "drone-detection": ("drone.png", 0.5, 0.45),
     "drone-hardware": ("drone_hardware.jpg", 0.42, 0.45),
-    "filter-detection": ("filter_detection.jpg", 0.5, 0.13),
-    "signature-forgery": ("deeplearning.png", 0.5, 0.5),
     "thyrocare": ("ThyroCare.png", 0.5, 0.31),
-    "data-analysis": ("data.png", 0.5, 0.12),
-    "benchmark": ("benchmark.png", 0.5, 0.2),
+    "thyrocare-synthetic": ("data.png", 0.5, 0.12),
     "bookify": ("UI.png", 0.5, 0.5),
 }
 

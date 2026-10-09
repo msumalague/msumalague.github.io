@@ -163,12 +163,14 @@
     return Object.assign({ categories: [], stack: [], built: [], gallery: [], image: {}, context: "", tagline: "", summary: "", problem: "", theme: "vision" }, p);
   });
   var linkIcons = { github: "i-github", doc: "i-doc", demo: "i-external" };
-  var themeTags = { vision: "CV", neural: "ML", robotics: "Edge", data: "Data", product: "UI" };
+  var themeTags = { agent: "GenAI", vision: "CV", neural: "ML", robotics: "Edge", data: "Data", product: "UI" };
 
   function hudMarkup(theme) {
     var corners = '<svg class="media-hud__corners" viewBox="0 0 100 100" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M0 14V0h10M90 0h10v14M100 86v14H90M10 100H0V86"/></svg>';
     var extra = "";
-    if (theme === "vision") {
+    if (theme === "agent") {
+      extra = '<svg class="hud-orbit" viewBox="0 0 64 64"><circle cx="32" cy="32" r="7"/><g class="orbit"><circle cx="32" cy="32" r="24" stroke-dasharray="3 5"/><circle cx="32" cy="8" r="4"/><circle cx="52.8" cy="44" r="4"/><circle cx="11.2" cy="44" r="4"/></g></svg>';
+    } else if (theme === "vision") {
       extra = '<div class="hud-scan"></div><svg class="hud-reticle" viewBox="0 0 52 52"><circle cx="26" cy="26" r="9"/><g class="spin"><circle cx="26" cy="26" r="21" stroke-dasharray="7 5"/><path d="M26 2v9M26 41v9M2 26h9M41 26h9"/></g></svg>';
     } else if (theme === "neural") {
       var layers = [[10, [14, 34, 54]], [52, [8, 26, 44, 62]], [94, [24, 44]]];
@@ -228,7 +230,7 @@
     return '<li class="' + (p.featured ? "is-featured" : "") + '" data-categories="' + esc(p.categories.join(" ")) + '" style="view-transition-name: card-' + p.id + '">' +
       '<article class="project-card' + (p.featured ? " project-card--featured" : "") + '" data-theme="' + esc(p.theme) + '" aria-labelledby="p-' + p.id + '-title">' +
         (p.featured ? '<span class="featured-flag">Featured</span>' : "") +
-        '<div class="project-card__media">' + cardImage(p) + hudMarkup(p.theme) + "</div>" +
+        '<div class="project-card__media' + (p.image.svg ? " project-card__media--svg" : "") + '">' + cardImage(p) + hudMarkup(p.theme) + "</div>" +
         '<div class="project-card__body">' +
           '<p class="project-card__meta">' + metaMarkup(p) + "</p>" +
           '<h3 class="project-card__title" id="p-' + p.id + '-title">' + esc(p.title) + "</h3>" +
@@ -547,7 +549,7 @@
         sway: Math.random() * Math.PI * 2,
         swaySpeed: 0.004 + Math.random() * 0.01,
         twinkle: Math.random() * Math.PI * 2,
-        color: roll < 0.68 ? "94,242,214" : roll < 0.88 ? "244,184,96" : "214,236,228",
+        color: roll < 0.68 ? "183,148,255" : roll < 0.88 ? "244,184,96" : "232,224,255",
         base: 0.25 + Math.random() * 0.55,
       };
     }

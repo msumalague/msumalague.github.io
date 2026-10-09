@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="JetBrains Mono, Consolas, Menlo, monospace">
+  <title>Benchmark and segment analytics explorers: original illustration</title>
+  <defs>
+    <pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0v32" fill="none" stroke="#b794ff" stroke-opacity=".05"/></pattern>
+    <style>
+      .flow { stroke-dasharray: 4 6; animation: flow 1.6s linear infinite; }
+      @keyframes flow { to { stroke-dashoffset: -20; } }
+      @media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+    </style>
+  </defs>
+  <rect width="800" height="500" fill="#0b0814"/>
+  <rect width="800" height="500" fill="url(#g)"/>
+  <text x="40" y="52" fill="#b794ff" font-size="12" letter-spacing="1.5">SELF-SERVE ANALYTICS EXPLORERS</text>
+  <text x="40" y="70" fill="#8f86a0" font-size="11">illustrative figure · placeholder values · no client data</text>
+
+  <!-- sources -->
+  <g transform="translate(40 104)" font-size="10" fill="#bdb4cc">
+    <g><path d="M0 0h52l12 12v52H0z" fill="#120e1c" stroke="#b794ff" stroke-opacity=".4"/><text x="8" y="44">.parquet</text></g>
+    <g transform="translate(14 78)"><path d="M0 0h52l12 12v52H0z" fill="#120e1c" stroke="#b794ff" stroke-opacity=".4"/><text x="14" y="44">.csv</text></g>
+    <g transform="translate(0 156)"><path d="M0 0h52l12 12v52H0z" fill="#120e1c" stroke="#b794ff" stroke-opacity=".4"/><text x="12" y="44">.xlsx</text></g>
+  </g>
+  <g fill="none" stroke="#b794ff" stroke-opacity=".6" class="flow"><path d="M108 140c26 0 26 80 50 80M122 218h36M108 296c26 0 26-76 50-76"/></g>
+  <g transform="translate(160 182)">
+    <rect width="116" height="76" rx="5" fill="#1d1630" stroke="#b794ff"/>
+    <text x="14" y="28" fill="#efeaf7" font-size="11">metrics core</text>
+    <text x="14" y="46" fill="#8f86a0" font-size="10">versioned</text>
+    <text x="14" y="60" fill="#8f86a0" font-size="10">dataset</text>
+  </g>
+  <!-- lock -->
+  <g fill="none" stroke="#b794ff" stroke-opacity=".6" class="flow"><path d="M276 220h30M346 220h26"/></g>
+  <g transform="translate(306 196)">
+    <rect x="4" y="18" width="32" height="28" rx="4" fill="#120e1c" stroke="#f4b860" stroke-width="1.6"/>
+    <path d="M10 18v-6a10 10 0 0 1 20 0v6" fill="none" stroke="#f4b860" stroke-width="1.6"/><circle cx="20" cy="32" r="3" fill="#f4b860"/>
+  </g>
+  <text x="296" y="264" fill="#f4b860" font-size="9">server-side</text>
+  <text x="296" y="276" fill="#f4b860" font-size="9">sessions</text>
+
+  <!-- browser -->
+  <g transform="translate(374 96)">
+    <rect width="388" height="270" rx="6" fill="#120e1c" stroke="#b794ff" stroke-opacity=".45"/>
+    <path d="M0 26h388" stroke="#b794ff" stroke-opacity=".25"/>
+    <circle cx="14" cy="13" r="4" fill="#8f86a0" fill-opacity=".5"/><circle cx="28" cy="13" r="4" fill="#8f86a0" fill-opacity=".5"/><circle cx="42" cy="13" r="4" fill="#8f86a0" fill-opacity=".5"/>
+    <g font-size="9" fill="#bdb4cc">
+      <rect x="16" y="40" width="70" height="18" rx="9" fill="#b794ff" fill-opacity=".18" stroke="#b794ff"/><text x="28" y="53" fill="#ddccff">metric</text>
+      <rect x="94" y="40" width="70" height="18" rx="9" fill="none" stroke="#b794ff" stroke-opacity=".4"/><text x="104" y="53">segment</text>
+      <rect x="172" y="40" width="62" height="18" rx="9" fill="none" stroke="#b794ff" stroke-opacity=".4"/><text x="184" y="53">filter</text>
+    </g>
+    <g font-size="9" fill="#8f86a0">
+      <text x="16" y="90">Group A</text><text x="16" y="124">Group B</text><text x="16" y="158">Group C</text><text x="16" y="192">Group D</text>
+    </g>
+    <g stroke="#8b5cf6" stroke-width="2"><path d="M110 86H330M140 120H300M96 154H350M160 188H270"/></g>
+    <g>
+      <circle cx="110" cy="86" r="5" fill="#ddccff"/><circle cx="220" cy="86" r="5" fill="#b794ff"/><circle cx="330" cy="86" r="5" fill="#8b5cf6"/>
+      <circle cx="140" cy="120" r="5" fill="#ddccff"/><circle cx="210" cy="120" r="5" fill="#b794ff"/><circle cx="300" cy="120" r="5" fill="#8b5cf6"/>
+      <circle cx="96" cy="154" r="5" fill="#ddccff"/><circle cx="230" cy="154" r="5" fill="#b794ff"/><circle cx="350" cy="154" r="5" fill="#8b5cf6"/>
+      <circle cx="160" cy="188" r="5" fill="#ddccff"/><circle cx="200" cy="188" r="5" fill="#b794ff"/><circle cx="270" cy="188" r="5" fill="#8b5cf6"/>
+    </g>
+    <g font-size="9" fill="#bdb4cc" transform="translate(16 222)">
+      <circle cx="4" cy="-3" r="4" fill="#ddccff"/><text x="12" y="0">P50</text><circle cx="52" cy="-3" r="4" fill="#b794ff"/><text x="60" y="0">P75</text><circle cx="100" cy="-3" r="4" fill="#8b5cf6"/><text x="108" y="0">P90</text>
+    </g>
+    <g font-size="9" fill="#efeaf7" transform="translate(212 236)">
+      <rect width="50" height="20" rx="3" fill="none" stroke="#b794ff" stroke-opacity=".5"/><text x="10" y="14">XLSX</text>
+      <rect x="58" width="56" height="20" rx="3" fill="none" stroke="#b794ff" stroke-opacity=".5"/><text x="66" y="14">Sheets</text>
+      <rect x="122" width="40" height="20" rx="3" fill="none" stroke="#b794ff" stroke-opacity=".5"/><text x="130" y="14">SVG</text>
+    </g>
+  </g>
+
+  <!-- provenance -->
+  <g transform="translate(40 394)" font-size="10">
+    <rect width="722" height="64" rx="5" fill="#120e1c" stroke="#b794ff" stroke-opacity=".2"/>
+    <text x="20" y="26" fill="#b794ff" letter-spacing="1.2">PROVENANCE</text>
+    <text x="20" y="46" fill="#bdb4cc">every figure → source file · rule ·</text>
+    <path d="M262 41l4 4 8-9" stroke="#b794ff" stroke-width="1.6" fill="none"/>
+    <text x="282" y="46" fill="#bdb4cc">matches published  ·  regression-tested</text>
+  </g>
+</svg>

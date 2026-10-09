@@ -96,7 +96,7 @@ far = ridge(7, 300, [(48, 1.1), (30, 2.7), (14, 6.3), (6, 13)])
 tower_x = 1215
 tower_y = y_at(far, tower_x)
 tower = (
-    f'<g fill="#1d3b35">'
+    f'<g fill="#2b2147">'
     f'<path d="M{tower_x - 9},{fmt(tower_y + 4)} L{tower_x - 2.2},{fmt(tower_y - 150)} L{tower_x + 2.2},{fmt(tower_y - 150)} L{tower_x + 9},{fmt(tower_y + 4)} Z"/>'
     f'<path d="M{tower_x - 18},{fmt(tower_y - 92)} h36 v3 h-36 Z M{tower_x - 13},{fmt(tower_y - 122)} h26 v2.5 h-26 Z"/>'
     f'<path d="M{tower_x - 1},{fmt(tower_y - 150)} L{tower_x - 1},{fmt(tower_y - 176)} L{tower_x + 1},{fmt(tower_y - 176)} L{tower_x + 1},{fmt(tower_y - 150)} Z"/>'
@@ -106,8 +106,8 @@ tower = (
 )
 far_defs = (
     '<linearGradient id="farFill" x1="0" y1="0" x2="0" y2="1">'
-    '<stop offset="0" stop-color="#1d3b35"/><stop offset="0.55" stop-color="#132a25"/>'
-    '<stop offset="1" stop-color="#0c1916"/></linearGradient>'
+    '<stop offset="0" stop-color="#2b2147"/><stop offset="0.55" stop-color="#1b1530"/>'
+    '<stop offset="1" stop-color="#110c1e"/></linearGradient>'
     '<radialGradient id="beaconGlow"><stop offset="0" stop-color="#f4b860" stop-opacity=".55"/>'
     '<stop offset="1" stop-color="#f4b860" stop-opacity="0"/></radialGradient>'
     "<style>.beacon{animation:b 3.2s ease-in-out infinite}"
@@ -117,7 +117,7 @@ far_defs = (
 far_back = ridge(3, 330, [(36, 1.6), (20, 3.9), (8, 9)])
 (OUT / "ridge-far.svg").write_text(
     svg(
-        f'<path d="{ridge_path(far_back)}" fill="#163029" opacity=".55"/>'
+        f'<path d="{ridge_path(far_back)}" fill="#221a3a" opacity=".55"/>'
         f'{tower}<path d="{ridge_path(far)}" fill="url(#farFill)"/>',
         far_defs,
     ),
@@ -129,7 +129,7 @@ mid = ridge(11, 392, [(26, 1.3), (14, 3.1), (6, 7.5)])
 mid_trees = forest(mid, 21, 13, 26, 58)
 (OUT / "ridge-mid.svg").write_text(
     svg(
-        f'<g fill="#0f211c"><path d="{ridge_path(mid)}"/><path d="{mid_trees}"/></g>'
+        f'<g fill="#140f22"><path d="{ridge_path(mid)}"/><path d="{mid_trees}"/></g>'
     ),
     encoding="utf-8",
 )
@@ -138,7 +138,7 @@ mid_trees = forest(mid, 21, 13, 26, 58)
 near = ridge(29, 470, [(18, 1.2), (8, 3.3), (4, 8)])
 near_trees = forest(near, 41, 22, 70, 150, skip=(380, 1080))
 (OUT / "ridge-near.svg").write_text(
-    svg(f'<g fill="#07100d"><path d="{ridge_path(near)}"/><path d="{near_trees}"/></g>'),
+    svg(f'<g fill="#0a0712"><path d="{ridge_path(near)}"/><path d="{near_trees}"/></g>'),
     encoding="utf-8",
 )
 

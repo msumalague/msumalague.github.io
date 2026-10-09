@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="JetBrains Mono, Consolas, Menlo, monospace">
+  <title>Dental ornament virtual try-on: original illustration</title>
+  <defs>
+    <pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0v32" fill="none" stroke="#b794ff" stroke-opacity=".05"/></pattern>
+    <linearGradient id="tooth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efeaf7"/><stop offset="1" stop-color="#bdb4cc"/></linearGradient>
+    <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f0ff"/><stop offset=".5" stop-color="#b794ff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+    <radialGradient id="sparkle" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ddccff" stop-opacity=".7"/><stop offset="1" stop-color="#ddccff" stop-opacity="0"/></radialGradient>
+    <style>
+      .drop { animation: drop 3.6s ease-in-out infinite; }
+      @keyframes drop { 0%, 15% { transform: translateY(-34px); opacity: 0; } 40%, 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(0); opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { .drop { animation: none; } }
+    </style>
+  </defs>
+  <rect width="800" height="500" fill="#0b0814"/>
+  <rect width="800" height="500" fill="url(#g)"/>
+  <text x="40" y="52" fill="#b794ff" font-size="12" letter-spacing="1.5">VIRTUAL TRY-ON · CV + GENERATIVE AI</text>
+  <text x="40" y="70" fill="#8f86a0" font-size="11">detect → place → blend → enhance</text>
+
+  <!-- face mesh hint -->
+  <g fill="#b794ff" fill-opacity=".35">
+    <circle cx="150" cy="120" r="2"/><circle cx="190" cy="112" r="2"/><circle cx="230" cy="108" r="2"/><circle cx="270" cy="108" r="2"/><circle cx="310" cy="112" r="2"/><circle cx="350" cy="120" r="2"/>
+    <circle cx="130" cy="150" r="2"/><circle cx="170" cy="144" r="2"/><circle cx="210" cy="140" r="2"/><circle cx="250" cy="138" r="2"/><circle cx="290" cy="140" r="2"/><circle cx="330" cy="144" r="2"/><circle cx="370" cy="150" r="2"/>
+  </g>
+  <g stroke="#b794ff" stroke-opacity=".12" fill="none"><path d="M150 120 130 150 170 144 190 112 210 140 230 108 250 138 270 108 290 140 310 112 330 144 350 120 370 150"/></g>
+  <path d="M104 206 396 190" stroke="#f4b860" stroke-dasharray="5 5" stroke-opacity=".8"/>
+  <text x="398" y="186" fill="#f4b860" font-size="9">roll</text>
+
+  <!-- lips + teeth -->
+  <path d="M96 210c60-30 248-46 312-14-40 80-260 92-312 14z" fill="#2a1f3f" stroke="#8b5cf6" stroke-opacity=".6"/>
+  <g stroke="#8f86a0" stroke-opacity=".5">
+    <path d="M128 214c4-10 32-12 34 0v28c-8 6-26 6-34 0z" fill="url(#tooth)"/>
+    <path d="M166 210c4-12 34-13 36 0v34c-8 6-28 6-36 0z" fill="url(#tooth)"/>
+    <path d="M206 206c4-12 36-13 38 0v38c-8 6-30 6-38 0z" fill="url(#tooth)"/>
+    <path d="M248 204c4-12 36-13 38 0v38c-8 6-30 6-38 0z" fill="url(#tooth)"/>
+    <path d="M290 204c4-12 34-12 36 0v34c-8 6-28 6-36 0z" fill="url(#tooth)"/>
+    <path d="M330 206c4-10 32-11 34 0v28c-8 6-26 6-34 0z" fill="url(#tooth)"/>
+  </g>
+  <g font-size="9" fill="#12061f" text-anchor="middle">
+    <circle cx="145" cy="262" r="8" fill="#b794ff"/><text x="145" y="265">1</text>
+    <circle cx="184" cy="266" r="8" fill="#b794ff"/><text x="184" y="269">2</text>
+    <circle cx="225" cy="270" r="8" fill="#ddccff"/><text x="225" y="273">3</text>
+    <circle cx="267" cy="268" r="8" fill="#b794ff"/><text x="267" y="271">4</text>
+    <circle cx="308" cy="264" r="8" fill="#b794ff"/><text x="308" y="267">5</text>
+    <circle cx="347" cy="260" r="8" fill="#b794ff"/><text x="347" y="263">6</text>
+  </g>
+  <rect x="200" y="196" width="50" height="56" fill="none" stroke="#b794ff" stroke-width="1.5"/>
+  <!-- gem -->
+  <g class="drop">
+    <circle cx="225" cy="226" r="16" fill="url(#sparkle)"/>
+    <path d="M225 214l9 8-9 14-9-14z" fill="url(#gem)" stroke="#f6f0ff" stroke-width=".8"/>
+  </g>
+  <path d="M225 150v50" stroke="#ddccff" stroke-dasharray="2 4" stroke-opacity=".7"/>
+  <text x="96" y="318" fill="#8f86a0" font-size="10" letter-spacing="1">MOUTH LANDMARKS + TOOTH DETECTOR</text>
+
+  <!-- pipeline -->
+  <g transform="translate(470 100)" font-size="11">
+    <g><rect width="290" height="64" rx="4" fill="#120e1c" stroke="#b794ff" stroke-opacity=".35"/><text x="16" y="26" fill="#efeaf7">1 · detect</text><text x="16" y="46" fill="#8f86a0" font-size="10">MediaPipe mesh · ONNX teeth</text></g>
+    <g transform="translate(0 80)"><rect width="290" height="64" rx="4" fill="#120e1c" stroke="#b794ff" stroke-opacity=".35"/><text x="16" y="26" fill="#efeaf7">2 · composite</text><text x="16" y="46" fill="#8f86a0" font-size="10">rotation-aware pyramid / seamless</text></g>
+    <g transform="translate(0 160)"><rect width="290" height="64" rx="4" fill="#1d1630" stroke="#b794ff"/><text x="16" y="26" fill="#efeaf7">3 · enhance</text><text x="16" y="46" fill="#8f86a0" font-size="10">Gemini  |  gpt-image-1</text></g>
+    <g stroke="#b794ff" stroke-opacity=".6"><path d="M145 64v16M145 144v16"/></g>
+  </g>
+
+  <!-- comparison -->
+  <g transform="translate(40 352)" font-size="10">
+    <rect width="722" height="100" rx="5" fill="#120e1c" stroke="#b794ff" stroke-opacity=".2"/>
+    <text x="20" y="28" fill="#b794ff" letter-spacing="1.2">APPROACHES COMPARED</text>
+    <g transform="translate(20 44)">
+      <rect width="320" height="38" rx="4" fill="none" stroke="#8f86a0" stroke-opacity=".5" stroke-dasharray="4 4"/>
+      <text x="14" y="24" fill="#bdb4cc">prompt-only: realistic, misplaced</text>
+    </g>
+    <g transform="translate(372 44)">
+      <rect width="330" height="38" rx="4" fill="#b794ff" fill-opacity=".1" stroke="#b794ff"/>
+      <text x="14" y="24" fill="#efeaf7">detection-guided + enhance: both</text>
+    </g>
+  </g>
+</svg>
