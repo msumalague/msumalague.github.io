@@ -17,7 +17,7 @@
   <meta property="og:image" content="https://msumalague.github.io/images/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Mairene Sumalague, AI/ML Engineer and Software Engineer: portfolio hero with an original robotic wolf illustration">
+  <meta property="og:image:alt" content="Mairene Sumalague, AI/ML Engineer and Software Engineer: portfolio hero with an original interactive robotic cat illustration">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -132,25 +132,34 @@
         <img class="scene__layer scene__layer--near" src="images/scene/ridge-near.svg" alt="" data-depth="0.4">
         <canvas class="scene__particles" data-particles></canvas>
 
-        <!-- Original robotic wolf artwork -->
-        <svg class="wolf" viewBox="0 0 820 440" data-depth="0.5" data-wolf>
+        <div class="scene__vignette"></div>
+      </div>
+
+      <!-- Original robotic cat: interactive (eyes follow the pointer; click, tap, or press Enter to pet) -->
+      <div class="creature" data-creature data-depth="0.5">
+        <svg class="cat" viewBox="0 0 820 440" aria-hidden="true" focusable="false">
           <defs>
-            <linearGradient id="wolfBody" gradientUnits="userSpaceOnUse" x1="0" y1="120" x2="0" y2="420">
-              <stop offset="0" stop-color="#2a2140"/>
-              <stop offset=".42" stop-color="#130e21"/>
+            <linearGradient id="catBody" gradientUnits="userSpaceOnUse" x1="0" y1="110" x2="0" y2="420">
+              <stop offset="0" stop-color="#2e2347"/>
+              <stop offset=".45" stop-color="#171028"/>
+              <stop offset="1" stop-color="#07050c"/>
+            </linearGradient>
+            <linearGradient id="catFar" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="420">
+              <stop offset="0" stop-color="#1a1430"/>
               <stop offset="1" stop-color="#06040b"/>
             </linearGradient>
-            <linearGradient id="wolfFar" gradientUnits="userSpaceOnUse" x1="0" y1="200" x2="0" y2="420">
-              <stop offset="0" stop-color="#1a1430"/>
-              <stop offset="1" stop-color="#07050b"/>
-            </linearGradient>
-            <linearGradient id="wolfRim" gradientUnits="userSpaceOnUse" x1="0" y1="100" x2="0" y2="420">
+            <linearGradient id="catRim" gradientUnits="userSpaceOnUse" x1="0" y1="100" x2="0" y2="420">
               <stop offset="0" stop-color="#b794ff" stop-opacity=".95"/>
-              <stop offset=".33" stop-color="#b794ff" stop-opacity=".3"/>
-              <stop offset=".7" stop-color="#b794ff" stop-opacity=".04"/>
+              <stop offset=".38" stop-color="#b794ff" stop-opacity=".32"/>
+              <stop offset=".75" stop-color="#b794ff" stop-opacity=".05"/>
             </linearGradient>
+            <radialGradient id="catIris" cx=".5" cy=".45" r=".62">
+              <stop offset="0" stop-color="#f6f0ff"/>
+              <stop offset=".45" stop-color="#c9b0ff"/>
+              <stop offset="1" stop-color="#7c4dff"/>
+            </radialGradient>
             <radialGradient id="eyeGlow">
-              <stop offset="0" stop-color="#b794ff" stop-opacity=".85"/>
+              <stop offset="0" stop-color="#b794ff" stop-opacity=".75"/>
               <stop offset="1" stop-color="#b794ff" stop-opacity="0"/>
             </radialGradient>
             <radialGradient id="coreGlow">
@@ -163,74 +172,126 @@
               <stop offset="1" stop-color="#fff" stop-opacity="0"/>
             </linearGradient>
             <mask id="scanMask" maskUnits="userSpaceOnUse" x="0" y="0" width="820" height="440">
-              <rect class="wolf__beam" x="-150" y="0" width="150" height="440" fill="url(#beamGrad)"/>
+              <rect class="cat__beam" x="-150" y="0" width="150" height="440" fill="url(#beamGrad)"/>
             </mask>
+            <clipPath id="eyeClipL"><path d="M182 216C188 202 212 200 220 212 212 226 190 228 182 216Z"/></clipPath>
+            <clipPath id="eyeClipR"><path d="M278 216C272 202 248 200 240 212 248 226 270 228 278 216Z"/></clipPath>
 
-            <path id="w-head" d="M119 213 128 202 176 188 196 182 209 174 218 165 225 116 244 157 253 153 267 120 272 162 287 172 297 192 292 220 274 234 257 237 232 238 191 234 155 227 133 223Z"/>
-            <path id="w-torso" d="M268 182 282 166 298 148 312 164 328 144 342 166 358 150 372 174 386 178 440 188 500 191 560 185 604 189 618 214 612 252 594 274 558 288 500 301 440 303 394 298 362 312 332 318 316 308 296 300 300 284 282 280 288 264 270 258 276 244 262 236Z"/>
-            <path id="w-tail" d="m604 186 46-6 4 26-42 8Zm52-7 38-9 4 22-38 12Zm44-11 32-12 4 20-32 14Zm38-14 24-12 4 18-24 14Zm30-14 30-16-26 34Z"/>
-            <path id="w-legs-near" d="M326 232 376 242 370 300 346 322 322 292ZM338 314 362 322 340 390 318 384ZM314 382 342 390 340 410 330 416H298L292 408 304 396ZM536 204 606 212 610 264 586 304 554 298 532 250ZM560 298 588 292 630 344 612 360ZM608 354 630 352 620 410H602ZM598 404 622 406 620 416H582L578 410Z"/>
-            <path id="w-legs-far" d="M368 248 406 252 402 306 380 324ZM380 316 400 320V392H382ZM378 388 402 392V412L394 416H364L360 408ZM498 218 558 224 550 292 512 298ZM518 294 540 292 570 344 552 354ZM552 348 568 350 558 410H542ZM538 404 562 406 560 416H522L518 410Z"/>
+            <path id="c-head" d="M160 190C168 168 196 154 230 154S292 168 300 190C312 216 312 244 296 262 278 280 256 286 230 286S182 280 164 262C148 244 148 216 160 190Z"/>
+            <path id="c-ear-l" d="M158 196 168 108 216 160Z"/>
+            <path id="c-ear-r" d="M302 196 292 108 244 160Z"/>
+            <path id="c-body" d="M292 262C360 240 470 236 560 246 628 254 668 296 664 350 662 382 650 404 624 412L360 414C318 412 296 396 290 360 286 320 284 286 292 262Z"/>
+            <path id="c-haunch" d="M520 300C560 276 630 284 650 330 664 372 640 408 600 412H520C500 380 496 330 520 300Z"/>
+            <path id="c-legs-near" d="M286 318 336 330 344 384 300 400 280 360ZM300 384 196 392 170 398 166 414H306ZM178 394C160 392 142 398 140 408V414H182ZM520 396 468 398 452 404V414H530Z"/>
+            <path id="c-legs-far" d="M300 372 210 384 186 392 182 412 300 414Z"/>
+            <path id="c-tail" d="M648 376C700 368 736 330 748 288 758 252 752 224 732 210"/>
           </defs>
 
           <!-- ledge -->
-          <path class="wolf__ledge" d="M150 440 196 424l66-10 94 4 72-6 92 2 82-4 58 8 64 12 46 10Z" fill="#07050b"/>
-          <path d="M262 414 300 420m120-8 50 6m140-8 40 8" stroke="#2a2240" stroke-width="1.2" fill="none" opacity=".6"/>
+          <path d="M110 440 152 424l88-8 120 2 140-4 90 4 60 6 52 16Z" fill="#06040b"/>
+          <path d="M240 416 280 420M430 414l46 4M600 416l40 6" stroke="#2a2240" stroke-width="1.2" fill="none" opacity=".6"/>
 
-          <g class="wolf__body">
-            <use href="#w-tail" fill="url(#wolfBody)" stroke="url(#wolfRim)" stroke-width="1.4"/>
-            <circle class="wolf__glow" cx="786" cy="136" r="14" fill="url(#eyeGlow)"/>
-            <use href="#w-legs-far" fill="url(#wolfFar)" stroke="#b794ff" stroke-opacity=".12" stroke-width="1"/>
-            <g fill="#0e0a17" stroke="#b794ff" stroke-opacity=".25" stroke-width="1">
-              <circle cx="390" cy="320" r="8.5"/><circle cx="391" cy="391" r="6"/><circle cx="530" cy="295" r="9"/><circle cx="560" cy="350" r="6.5"/>
+          <g class="cat__body">
+            <g class="cat__torso" transform="matrix(0.86 0 0 1 40.6 0)">
+            <!-- tail -->
+            <g class="cat__tail">
+              <use href="#c-tail" fill="none" stroke="#1d1631" stroke-width="22" stroke-linecap="round" stroke-dasharray="30 5"/>
+              <use href="#c-tail" fill="none" stroke="#b794ff" stroke-opacity=".35" stroke-width="1.2"/>
+              <use class="cat__conduit" href="#c-tail" fill="none" stroke="#b794ff" stroke-width="1.6" stroke-linecap="round"/>
+              <circle class="cat__glow" cx="732" cy="210" r="18" fill="url(#eyeGlow)"/>
+              <circle cx="732" cy="210" r="6" fill="#ddccff"/>
             </g>
 
-            <use href="#w-torso" fill="url(#wolfBody)" stroke="url(#wolfRim)" stroke-width="1.6"/>
-            <path d="M414 188 424 166l10 23Zm42 3 11-20 9 20Zm42 1 9-17 7 16Z" fill="#221a36" stroke="url(#wolfRim)" stroke-width="1.2"/>
-            <g class="wolf__seams" fill="none" stroke="#c9b0ff" stroke-opacity=".18" stroke-width="1.1">
-              <path d="M298 150 290 198M328 146 316 214M358 152 346 232M300 284 330 296M288 264 326 270M404 186l-6 113M448 190l-4 112M492 191l-2 110M536 187l-2 106M580 186c10 24 16 54 12 84"/>
+            <use href="#c-legs-far" fill="url(#catFar)" stroke="#b794ff" stroke-opacity=".22"/>
+            <use href="#c-body" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.6"/>
+            <g fill="none" stroke="#c9b0ff" stroke-opacity=".16" stroke-width="1.1">
+              <path d="M352 246c-4 50-4 110-2 166M404 240c-2 56-2 116 0 172M456 238v176M300 300c18-10 40-2 46 28"/>
             </g>
-            <path class="wolf__conduit" d="M296 178 360 186l80 12 60 3 60-6 46 4" fill="none" stroke="#b794ff" stroke-width="1.6" stroke-linecap="round"/>
-            <path class="wolf__conduit wolf__conduit--low" d="M336 306c44-14 104-14 164-14s70-14 100-30" fill="none" stroke="#b794ff" stroke-width="1.1" stroke-linecap="round"/>
-            <circle class="wolf__glow wolf__core-glow" cx="306" cy="252" r="22" fill="url(#coreGlow)"/>
-            <circle class="wolf__core" cx="306" cy="252" r="5" fill="#f4b860"/>
+            <path class="cat__conduit" d="M302 258c66-20 168-22 258-12 60 8 92 36 100 72" fill="none" stroke="#b794ff" stroke-width="1.6" stroke-linecap="round"/>
 
-            <use href="#w-legs-near" fill="url(#wolfBody)" stroke="url(#wolfRim)" stroke-width="1.3"/>
-            <g fill="#100c1b" stroke="#b794ff" stroke-opacity=".4" stroke-width="1.1">
-              <circle cx="349" cy="318" r="10"/><circle cx="329" cy="387" r="6.5"/><circle cx="573" cy="298" r="11"/><circle cx="619" cy="353" r="7.5"/>
+            <use href="#c-haunch" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.4"/>
+            <path d="M540 312c30-18 80-12 96 22M548 340c20-10 54-6 66 16" fill="none" stroke="#c9b0ff" stroke-opacity=".18"/>
+            <use href="#c-legs-near" fill="url(#catBody)" stroke="#b794ff" stroke-opacity=".38" stroke-width="1.3"/>
+            <g fill="#0e0a17" stroke="#b794ff" stroke-opacity=".45" stroke-width="1.1">
+              <circle cx="302" cy="392" r="9"/><circle cx="588" cy="360" r="11"/>
+            </g>
+            <path d="M150 404v10M160 400v14M170 398v16M462 404v10M472 401v13" stroke="#06040b" stroke-width="1.6"/>
             </g>
 
-            <g class="wolf__head">
-              <use href="#w-head" fill="url(#wolfBody)" stroke="url(#wolfRim)" stroke-width="1.6"/>
-              <g fill="none" stroke="#c9b0ff" stroke-opacity=".22" stroke-width="1.1">
-                <path d="M176 189 209 213 258 234M139 206 132 218M133 223 211 222 234 238M209 175 234 188 272 187M226 125 235 157M266 128 267 158"/>
+            <!-- collar + power core -->
+            <path d="M190 276c26 18 76 18 108 0l6 12c-34 22-86 22-118 2z" fill="#140f22" stroke="url(#catRim)" stroke-width="1.2"/>
+            <circle class="cat__glow cat__core-glow" cx="246" cy="302" r="24" fill="url(#coreGlow)"/>
+            <circle class="cat__core" cx="246" cy="302" r="6" fill="#f4b860"/>
+
+            <!-- purr ripples (shown while petted) -->
+            <g class="cat__purr" fill="none" stroke="#c9b0ff" stroke-width="1.5">
+              <circle cx="246" cy="302" r="26"/><circle cx="246" cy="302" r="26"/><circle cx="246" cy="302" r="26"/>
+            </g>
+
+            <!-- head -->
+            <g class="cat__head">
+              <g class="cat__ear cat__ear--l">
+                <use href="#c-ear-l" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.5"/>
+                <path d="M172 132 178 170 204 162Z" fill="#b794ff" fill-opacity=".28"/>
               </g>
-              <path d="M119 213 128 202l11 5-7 12Z" fill="#2e2448"/>
-              <circle class="wolf__glow wolf__eye-glow" cx="194" cy="192" r="15" fill="url(#eyeGlow)"/>
-              <path class="wolf__eye" d="m181 193 25-6-2 6-21 5Z" fill="#ddccff"/>
+              <g class="cat__ear cat__ear--r">
+                <use href="#c-ear-r" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.5"/>
+                <path d="M288 132 282 170 256 162Z" fill="#b794ff" fill-opacity=".28"/>
+              </g>
+              <use href="#c-head" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.6"/>
+              <path d="M210 178l8-12 12 12 12-12 8 12" fill="none" stroke="#b794ff" stroke-opacity=".75" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+              <path d="M166 236c10 16 26 28 46 34M294 236c-10 16-26 28-46 34" fill="none" stroke="#c9b0ff" stroke-opacity=".2"/>
+
+              <g class="cat__eyes">
+                <g class="cat__eye">
+                  <circle class="cat__glow" cx="201" cy="214" r="22" fill="url(#eyeGlow)"/>
+                  <path d="M182 216C188 202 212 200 220 212 212 226 190 228 182 216Z" fill="url(#catIris)"/>
+                  <g clip-path="url(#eyeClipL)"><g class="cat__pupil"><ellipse cx="201" cy="214" rx="3.6" ry="9" fill="#0b0814"/><circle cx="205" cy="209" r="1.8" fill="#fff"/></g></g>
+                  <path d="M182 216C188 202 212 200 220 212 212 226 190 228 182 216Z" fill="none" stroke="#e4d8ff" stroke-opacity=".6"/>
+                </g>
+                <g class="cat__eye">
+                  <circle class="cat__glow" cx="259" cy="214" r="22" fill="url(#eyeGlow)"/>
+                  <path d="M278 216C272 202 248 200 240 212 248 226 270 228 278 216Z" fill="url(#catIris)"/>
+                  <g clip-path="url(#eyeClipR)"><g class="cat__pupil"><ellipse cx="259" cy="214" rx="3.6" ry="9" fill="#0b0814"/><circle cx="263" cy="209" r="1.8" fill="#fff"/></g></g>
+                  <path d="M278 216C272 202 248 200 240 212 248 226 270 228 278 216Z" fill="none" stroke="#e4d8ff" stroke-opacity=".6"/>
+                </g>
+              </g>
+              <g class="cat__happy" fill="none" stroke="#ddccff" stroke-width="3" stroke-linecap="round">
+                <path d="M184 218Q201 203 218 218"/><path d="M242 218Q259 203 276 218"/>
+              </g>
+              <path d="M224 236h12l-6 7z" fill="#c9b0ff"/>
+              <path d="M230 243c-1 6-8 9-13 5M230 243c1 6 8 9 13 5" fill="none" stroke="#bdb4cc" stroke-opacity=".7" stroke-width="1.4" stroke-linecap="round"/>
+              <g class="cat__whiskers" stroke="#c9b0ff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round">
+                <path d="M198 242 130 232M198 248 124 250M200 254 132 268"/>
+                <path d="M262 242 330 232M262 248 336 250M260 254 328 268"/>
+              </g>
             </g>
           </g>
 
           <!-- scan reveal: wireframe visible only under the moving beam -->
-          <g class="wolf__wire" mask="url(#scanMask)" fill="none" stroke="#b794ff" stroke-width="1.2">
-            <use href="#w-tail"/><use href="#w-legs-far"/><use href="#w-torso"/><use href="#w-legs-near"/>
-            <use class="wolf__wire-head" href="#w-head"/>
-            <path d="M298 148 332 318M358 150 316 308M440 188 394 298M500 191 440 303M560 185 500 301M604 189 558 288M176 188 155 227M209 174 232 238M267 120 257 237" stroke-opacity=".55"/>
+          <g class="cat__wire" mask="url(#scanMask)" fill="none" stroke="#b794ff" stroke-width="1.2">
+            <g transform="matrix(0.86 0 0 1 40.6 0)"><use href="#c-tail"/><use href="#c-legs-far"/><use href="#c-body"/><use href="#c-haunch"/><use href="#c-legs-near"/>
+            <path d="M292 262 344 384M360 244 300 400M456 238 360 414M560 246 456 414M664 350 560 412" stroke-opacity=".5"/></g>
+            <g class="cat__wire-head"><use href="#c-ear-l"/><use href="#c-ear-r"/><use href="#c-head"/></g>
+            <path d="M160 190 230 286M300 190 230 286M230 154v132" stroke-opacity=".5"/>
           </g>
-          <rect class="wolf__scanline" x="-2" y="70" width="2" height="356" fill="#b794ff"/>
+          <rect class="cat__scanline" x="-2" y="70" width="2" height="356" fill="#b794ff"/>
 
           <!-- detection overlay -->
-          <g class="wolf__detect" fill="none" stroke="#b794ff" stroke-width="2">
-            <path d="M84 126V98h28M778 98h28v28M806 394v28h-28M112 422H84v-28"/>
-            <g class="wolf__label">
-              <rect x="84" y="70" width="190" height="22" fill="#b794ff" fill-opacity=".14" stroke-width="1"/>
-              <text x="94" y="85.5" fill="#e4d8ff" stroke="none" font-family="JetBrains Mono, monospace" font-size="12.5" letter-spacing=".04em">machine.canid · 0.97</text>
-            </g>
+          <g class="cat__detect" fill="none" stroke="#b794ff" stroke-width="2">
+            <path d="M112 120V92h28M694 92h28v28M722 396v28h-28M140 424h-28v-28"/>
+            <rect x="112" y="64" width="214" height="22" fill="#b794ff" fill-opacity=".14" stroke-width="1"/>
+            <text x="122" y="79.5" fill="#e4d8ff" stroke="none" font-family="JetBrains Mono, monospace" font-size="12.5" letter-spacing=".04em" data-cat-label>machine.felis · 0.98</text>
           </g>
         </svg>
+        <button class="creature__pet" type="button" data-cat-pet aria-label="Pet the robot cat"></button>
+        <span class="creature__hint" aria-hidden="true" data-cat-hint><span class="creature__hint-fine">pet me</span><span class="creature__hint-touch">tap to pet</span></span>
+        <span class="visually-hidden" aria-live="polite" data-cat-status></span>
+      </div>
 
+      <div class="hero__front" aria-hidden="true">
         <div class="scene__fog scene__fog--front" data-depth="0.6"></div>
-        <div class="scene__vignette"></div>
+        <div class="hero__fade"></div>
       </div>
 
       <div class="container hero__inner">

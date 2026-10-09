@@ -300,31 +300,41 @@ body::before {
 }
 @keyframes flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.72); } }
 
-/* Wolf */
-.wolf {
-  right: clamp(-6rem, -2vw, 2rem); bottom: 1rem;
+/* Robotic cat: interactive, sits above the scene and below the copy */
+.creature {
+  position: absolute; z-index: 1;
+  right: clamp(-8rem, -6vw, 0rem); bottom: 1rem;
   /* Sized so the creature's head and detection label always clear the portrait above it. */
   width: clamp(24rem, min(54vw, 131vh - 21rem), 60rem);
   width: clamp(24rem, min(54vw, 131svh - 21rem), 60rem);
-  height: auto; max-width: none; overflow: visible;
+  aspect-ratio: 820 / 440;
+  pointer-events: none;
+  will-change: translate;
 }
-.wolf__head, .wolf__wire-head { transform-box: view-box; transform-origin: 284px 206px; transition: transform 0.9s var(--ease-out); transform: rotate(var(--head-rot, 0deg)); }
-.wolf:not(.is-tracking) .wolf__head,
-.wolf:not(.is-tracking) .wolf__wire-head { animation: headIdle 11s ease-in-out infinite; }
-@keyframes headIdle {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-3deg); }
-  55% { transform: rotate(-3deg); }
-  75% { transform: rotate(2deg); }
-}
-.wolf__conduit { stroke-dasharray: 5 9; opacity: 0.7; animation: conduit 2.4s linear infinite; }
-.wolf__conduit--low { opacity: 0.35; animation-duration: 3.4s; }
+.cat { display: block; width: 100%; height: auto; max-width: none; overflow: visible; }
+
+.cat__head, .cat__wire-head { transform-box: view-box; transform-origin: 232px 286px; transform: rotate(var(--head-rot, 0deg)); transition: transform 0.6s var(--ease-out); }
+.cat__ear { transform-box: view-box; transition: transform 0.35s var(--ease-out); }
+.cat__ear--l { transform-origin: 186px 178px; animation: earTwitchL 9s ease-in-out infinite; }
+.cat__ear--r { transform-origin: 274px 178px; animation: earTwitchR 11s ease-in-out 3s infinite; }
+@keyframes earTwitchL { 0%, 88%, 100% { transform: rotate(0deg); } 90% { transform: rotate(-12deg); } 92% { transform: rotate(2deg); } 94% { transform: rotate(-6deg); } }
+@keyframes earTwitchR { 0%, 88%, 100% { transform: rotate(0deg); } 90% { transform: rotate(12deg); } 92% { transform: rotate(-2deg); } 94% { transform: rotate(6deg); } }
+.cat__tail { transform-box: view-box; transform-origin: 650px 376px; animation: tailSway 5.5s ease-in-out infinite; }
+@keyframes tailSway { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-7deg); } }
+.cat__eye { transform-box: fill-box; transform-origin: center; animation: blink 6.5s ease-in-out infinite; transition: opacity 0.2s; }
+.cat__eye + .cat__eye { animation-delay: 0.04s; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.08); } }
+.cat__pupil ellipse { transform-box: fill-box; transform-origin: center; transition: transform 0.35s var(--ease-out); }
+.cat__whiskers { transform-box: view-box; transform-origin: 230px 248px; transition: transform 0.4s var(--ease-out); }
+.cat__happy { opacity: 0; transition: opacity 0.2s; }
+.cat__purr circle { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.cat__conduit { stroke-dasharray: 5 9; opacity: 0.7; animation: conduit 2.4s linear infinite; }
 @keyframes conduit { to { stroke-dashoffset: -28; } }
-.wolf__core, .wolf__core-glow { animation: corePulse 3.6s ease-in-out infinite; }
+.cat__core, .cat__core-glow { animation: corePulse 3.6s ease-in-out infinite; }
+.cat__eye .cat__glow { animation: corePulse 4.2s ease-in-out infinite; }
 @keyframes corePulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-.wolf__eye-glow { animation: corePulse 4.2s ease-in-out infinite; }
-.wolf__beam, .wolf__scanline { animation: sweep 11s var(--ease-io) infinite; animation-delay: 2.4s; }
-.wolf__scanline { opacity: 0; filter: drop-shadow(0 0 6px #b794ff); }
+.cat__beam, .cat__scanline { animation: sweep 11s var(--ease-io) infinite; animation-delay: 2.4s; }
+.cat__scanline { opacity: 0; filter: drop-shadow(0 0 6px #b794ff); }
 @keyframes sweep {
   0% { transform: translateX(0); opacity: 0; }
   2% { opacity: 0.9; }
@@ -332,17 +342,65 @@ body::before {
   36% { transform: translateX(1000px); opacity: 0; }
   100% { transform: translateX(1000px); opacity: 0; }
 }
-.wolf__beam { opacity: 1; }
-.wolf__detect { opacity: 0; transform-box: fill-box; transform-origin: center; animation: detect 11s var(--ease-out) infinite; animation-delay: 2.4s; }
+.cat__beam { opacity: 1; }
+.cat__detect { opacity: 0; transform-box: fill-box; transform-origin: center; animation: detect 11s var(--ease-out) infinite; animation-delay: 2.4s; }
 @keyframes detect {
   0%, 22% { opacity: 0; transform: scale(1.03); }
   32%, 86% { opacity: 1; transform: scale(1); }
   96%, 100% { opacity: 0; transform: scale(1); }
 }
 
+/* Noticing: the pointer is near the cat (or it has keyboard focus) */
+.creature.is-noticing .cat__ear--l { transform: rotate(-8deg); animation: none; }
+.creature.is-noticing .cat__ear--r { transform: rotate(8deg); animation: none; }
+.creature.is-noticing .cat__pupil ellipse { transform: scale(1.7, 1.08); }
+.creature.is-noticing .cat__tail { animation-duration: 1.8s; }
+
+/* Purring: after a pet */
+.creature.is-purring .cat__eye { opacity: 0; }
+.creature.is-purring .cat__happy { opacity: 1; }
+.creature.is-purring .cat__whiskers { transform: scaleY(0.82); }
+.creature.is-purring .cat__body { animation: purr 0.14s linear infinite; }
+@keyframes purr { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0.6px, -0.4px); } }
+.creature.is-purring .cat__purr circle { animation: purrRing 1.3s var(--ease-out) infinite; }
+.creature.is-purring .cat__purr circle:nth-child(2) { animation-delay: 0.43s; }
+.creature.is-purring .cat__purr circle:nth-child(3) { animation-delay: 0.86s; }
+@keyframes purrRing { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(3.2); opacity: 0; } }
+.creature.is-purring .cat__core, .creature.is-purring .cat__core-glow { animation-duration: 0.6s; }
+.creature.is-purring .cat__tail { animation: tailHappy 0.9s ease-in-out infinite; }
+.creature.is-purring .cat__detect { animation: none; opacity: 1; transform: none; }
+@keyframes tailHappy { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(-12deg); } }
+
+/* The pet target: a real button over the cat's body */
+.creature__pet {
+  position: absolute; left: 16%; top: 23%; width: 60%; height: 72%;
+  pointer-events: auto; cursor: pointer; padding: 0;
+  background: transparent; border: 0; border-radius: 40% 40% 14% 14%;
+  -webkit-tap-highlight-color: transparent;
+}
+.creature__pet:focus-visible { outline: 2px dashed var(--c-accent); outline-offset: 6px; }
+.creature__hint {
+  position: absolute; left: 40%; top: 27%;
+  display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.65rem;
+  font-family: var(--f-mono); font-size: var(--step--2); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap;
+  color: var(--c-accent); background: rgba(8, 6, 13, 0.72); border: 1px solid rgba(183, 148, 255, 0.4);
+  pointer-events: none; opacity: 0; animation: hintIn 0.6s var(--ease-out) 3.2s forwards;
+}
+.creature__hint::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-accent); box-shadow: 0 0 8px var(--c-accent); }
+.creature__hint-touch { display: none; }
+@media (hover: none) { .creature__hint-fine { display: none; } .creature__hint-touch { display: inline; } }
+.creature.was-petted .creature__hint { animation: none; opacity: 0; transition: opacity 0.3s; }
+@keyframes hintIn { to { opacity: 1; } }
+
+/* Front atmosphere above the creature */
+.hero__front { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.hero__front > * { position: absolute; }
+.hero__front > [data-depth] { will-change: translate; }
+.hero__fade { left: 0; right: 0; bottom: 0; height: 18%; background: linear-gradient(180deg, transparent, var(--c-bg)); }
+
 /* Intro: scene + creature emerge from the fog */
-.js .wolf { animation: emerge 2.2s var(--ease-out) 0.35s both; }
-.js .wolf__eye { animation: eyeOn 2.6s steps(1, end) 0.5s both; }
+.js .creature { animation: emerge 2.2s var(--ease-out) 0.35s both; }
+.js .cat__eyes { animation: eyeOn 2.6s steps(1, end) 0.5s both; }
 @keyframes emerge {
   from { opacity: 0; filter: blur(8px) brightness(0.4); transform: translateY(18px); }
   to { opacity: 1; filter: none; transform: none; }
@@ -354,6 +412,8 @@ body::before {
   70%, 100% { opacity: 1; }
 }
 
+.hero__inner, .hero__meta { position: relative; z-index: 2; pointer-events: none; }
+.hero__inner > *, .hero__meta > * { pointer-events: auto; }
 .hero__inner {
   display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); align-items: start; gap: 2rem;
   padding-block: clamp(1.5rem, 7vh, 5.5rem) 2rem;
@@ -422,7 +482,7 @@ body::before {
 
 /* Mid-size desktops: slide the creature right (cropping its tail) so the facts strip never covers it. */
 @media (min-width: 56.0625em) and (max-width: 72em) {
-  .wolf { right: -9vw; }
+  .creature { right: -16vw; }
 }
 
 /* Short laptop screens: tighten the hero so the scene stays in the first view. */
@@ -463,7 +523,7 @@ body::before {
 .motion-toggle svg { width: 0.9rem; height: 0.9rem; }
 .motion-toggle__play, .motion-toggle.is-paused .motion-toggle__pause { display: none; }
 .motion-toggle.is-paused .motion-toggle__play { display: block; color: var(--c-accent); }
-.motion-paused :is(.scene__fog, .scene__bird, .bird__wing, .wolf__head, .wolf__wire-head, .wolf__conduit, .wolf__core, .wolf__glow, .wolf__beam, .wolf__scanline, .wolf__detect, .ring, .portrait-hud__scan),
+.motion-paused :is(.scene__fog, .scene__bird, .bird__wing, .cat__ear, .cat__eye, .cat__tail, .cat__conduit, .cat__core, .cat__glow, .cat__beam, .cat__scanline, .cat__detect, .ring, .portrait-hud__scan),
 .motion-paused .status-dot::after, .motion-paused .scroll-cue__line::after, .motion-paused .lifecycle__track::after {
   animation-play-state: paused !important;
 }
@@ -889,7 +949,7 @@ body.dialog-open { overflow: hidden; }
   .hero__portrait { order: -1; justify-self: start; grid-auto-flow: column; align-items: center; gap: 1.25rem; }
   .hud-tag { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
   .hud-tag span + span { padding-left: 0; border-left: 0; }
-  .wolf { width: max(34rem, 110vw); left: -5vw; right: auto; bottom: 0; }
+  .creature { width: max(34rem, 110vw); left: -5vw; right: auto; bottom: 0; }
   .scene__vignette { background: linear-gradient(180deg, rgba(5, 4, 9, 0.86) 0%, rgba(5, 4, 9, 0.6) 55%, transparent 75%, var(--c-bg) 100%); }
   .scene__layer--far { bottom: 22%; height: 30%; }
   .scene__layer--mid { bottom: 8%; height: 26%; }
@@ -943,11 +1003,14 @@ body.dialog-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
-  .js [data-intro], .js .wolf, .js .wolf__eye { animation: none !important; opacity: 1; filter: none; transform: none; }
+  .js [data-intro], .js .creature, .js .cat__eyes { animation: none !important; opacity: 1; filter: none; transform: none; }
   .reveal-on [data-reveal] { opacity: 1; transform: none; }
-  .wolf__detect { animation: none !important; opacity: 1; transform: none; }
-  .wolf__beam, .wolf__scanline, .portrait-hud__scan, .scene__bird, .lifecycle__track::after, .project-card::before { display: none; }
-  .wolf__head, .wolf__wire-head { animation: none !important; }
+  .cat__detect { animation: none !important; opacity: 1; transform: none; }
+  .creature__hint { animation: none !important; opacity: 1; }
+  .creature.was-petted .creature__hint { opacity: 0; }
+  .creature.is-purring .cat__purr circle:first-child { animation: none !important; opacity: 0.6; transform: scale(1.8); }
+  .cat__beam, .cat__scanline, .portrait-hud__scan, .scene__bird, .lifecycle__track::after, .project-card::before { display: none; }
+  .cat__head, .cat__wire-head { transition: none; }
   .motion-toggle { display: none; }
 }
 
@@ -958,11 +1021,11 @@ body.dialog-open { overflow: hidden; }
     --c-text: #111; --c-text-2: #333; --c-text-3: #555; --c-line: #ccc; --c-line-2: #999; --c-accent: #5b2fc2; --c-amber: #8a5a12;
   }
   body { background: #fff; color: #111; }
-  body::before, .site-header, .hero__scene, .scroll-cue, .motion-toggle, .filters, .projects__more, .contact__glow, .project-dialog, .about__actions, .featured-flag, .media-hud { display: none !important; }
+  body::before, .site-header, .hero__scene, .creature, .hero__front, .scroll-cue, .motion-toggle, .filters, .projects__more, .contact__glow, .project-dialog, .about__actions, .featured-flag, .media-hud { display: none !important; }
   .hero { min-height: 0; padding-top: 0; }
   .hero__inner { padding-block: 1rem; }
   .hero__title-line--accent { background: none; color: #111; filter: none; }
-  .reveal-on [data-reveal], .js [data-intro], .js .wolf { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
+  .reveal-on [data-reveal], .js [data-intro], .js .creature { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
   .section { padding-block: 2rem; }
   .project-card, .skill-card, .role, .cert, .timeline__item { break-inside: avoid; }
   .btn--primary { color: #111; background: none; border: 1px solid #111; }

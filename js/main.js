@@ -506,15 +506,93 @@
     update();
   }
 
+  /* ------------------------------------------------------------- robotic cat */
+  // Eyes follow the pointer, ears perk up when you come close, and petting it
+  // (click, tap, or Enter/Space on the button over its body) makes it purr.
+  function initCat() {
+    var root = $("[data-creature]");
+    if (!root) return null;
+    var head = $(".cat__head", root);
+    var petBtn = $("[data-cat-pet]", root);
+    var label = $("[data-cat-label]", root);
+    var status = $("[data-cat-status]", root);
+    var defaultLabel = label ? label.textContent : "";
+    var moods = ["status · purring", "status · purring louder", "status · very happy", "status · best friends"];
+    var pupils = $$(".cat__eye", root).map(function (eye) {
+      return { eye: eye, el: $(".cat__pupil", eye), x: 0, y: 0, tx: 0, ty: 0 };
+    });
+    var pets = 0, lastPet = 0, purrTimer = 0, near = false, hovering = false;
+
+    function setNoticing() { root.classList.toggle("is-noticing", near || hovering); }
+
+    function track(e) {
+      if (!head) return;
+      var hb = head.getBoundingClientRect();
+      var hx = hb.left + hb.width / 2;
+      var hy = hb.top + hb.height * 0.6;
+      var scale = hb.width / 160; // the head is about 160 SVG units wide
+      pupils.forEach(function (p) {
+        var r = p.eye.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2);
+        var dy = e.clientY - (r.top + r.height / 2);
+        var dist = Math.hypot(dx, dy) || 1;
+        var reach = Math.min(1, dist / (220 * scale));
+        p.tx = (dx / dist) * reach * 6;
+        p.ty = (dy / dist) * reach * 3.5;
+      });
+      root.style.setProperty("--head-rot", clamp(((e.clientX - hx) / window.innerWidth) * 18, -7, 7).toFixed(2) + "deg");
+      near = Math.hypot(e.clientX - hx, e.clientY - hy) < 260 * scale;
+      setNoticing();
+    }
+
+    function step() {
+      pupils.forEach(function (p) {
+        p.x += (p.tx - p.x) * 0.2;
+        p.y += (p.ty - p.y) * 0.2;
+        p.el.style.transform = "translate(" + p.x.toFixed(2) + "px, " + p.y.toFixed(2) + "px)";
+      });
+    }
+
+    function reset() {
+      pupils.forEach(function (p) { p.x = p.y = p.tx = p.ty = 0; p.el.style.transform = ""; });
+      root.style.removeProperty("--head-rot");
+      near = false;
+      setNoticing();
+    }
+
+    function pet() {
+      var now = Date.now();
+      pets = now - lastPet < 4000 ? pets + 1 : 1;
+      lastPet = now;
+      root.classList.add("is-purring", "was-petted");
+      if (label) label.textContent = moods[Math.min(pets, moods.length) - 1];
+      if (status) status.textContent = pets === 1 ? "The robot cat purrs." : "The robot cat purrs happily (" + pets + " pets).";
+      clearTimeout(purrTimer);
+      purrTimer = setTimeout(function () {
+        root.classList.remove("is-purring");
+        if (label) label.textContent = defaultLabel;
+      }, 2600);
+    }
+
+    if (petBtn) {
+      petBtn.addEventListener("click", pet);
+      petBtn.addEventListener("pointerenter", function () { hovering = true; setNoticing(); });
+      petBtn.addEventListener("pointerleave", function () { hovering = false; setNoticing(); });
+      petBtn.addEventListener("focus", function () { hovering = true; setNoticing(); });
+      petBtn.addEventListener("blur", function () { hovering = false; setNoticing(); });
+    }
+    return { track: track, step: step, reset: reset };
+  }
+
   /* ---------------------------------------------------------------- hero scene */
   function initScene() {
     var hero = $("#top");
     var sceneEl = $("[data-scene]");
     if (!hero || !sceneEl) return null;
-    var layers = $$("[data-depth]", sceneEl).map(function (el) {
+    var layers = $$("[data-depth]", hero).map(function (el) {
       return { el: el, depth: parseFloat(el.getAttribute("data-depth")) || 0 };
     });
-    var wolf = $("[data-wolf]", sceneEl);
+    var cat = initCat();
     var canvas = $("[data-particles]", sceneEl);
     var ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
 
@@ -595,7 +673,7 @@
     function resetPose() {
       layers.forEach(function (l) { l.el.style.translate = ""; });
       pointer.x = pointer.y = pointer.tx = pointer.ty = 0;
-      if (wolf) { wolf.classList.remove("is-tracking"); wolf.style.removeProperty("--head-rot"); }
+      if (cat) cat.reset();
     }
 
     var last = 0;
@@ -607,6 +685,7 @@
       pointer.x += (pointer.tx - pointer.x) * 0.06;
       pointer.y += (pointer.ty - pointer.y) * 0.06;
       applyLayers();
+      if (cat) cat.step();
       if (!document.hidden) drawParticles(dt);
       rafId = requestAnimationFrame(frame);
     }
@@ -636,21 +715,12 @@
         if (!visible || !motionAllowed()) return;
         pointer.tx = (e.clientX / window.innerWidth) * 2 - 1;
         pointer.ty = (e.clientY / window.innerHeight) * 2 - 1;
-        if (wolf) {
-          var box = wolf.getBoundingClientRect();
-          var pivotY = box.top + box.height * (206 / 440);
-          var pivotX = box.left + box.width * (284 / 820);
-          // Positive rotation lifts the snout (the wolf faces left).
-          var dy = (pivotY - e.clientY) / window.innerHeight;
-          var facing = e.clientX < pivotX ? 1 : 0.35;
-          wolf.style.setProperty("--head-rot", clamp(dy * 22 * facing, -7, 8).toFixed(2) + "deg");
-          wolf.classList.add("is-tracking");
-        }
+        if (cat) cat.track(e);
       }, { passive: true });
       document.addEventListener("pointerleave", function () {
         pointer.tx = 0;
         pointer.ty = 0;
-        if (wolf) { wolf.classList.remove("is-tracking"); wolf.style.removeProperty("--head-rot"); }
+        if (cat) cat.reset();
       });
     }
 

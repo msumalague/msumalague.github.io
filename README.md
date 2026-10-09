@@ -44,4 +44,4 @@ Then open <http://localhost:8765/>.
 
 - Motion respects `prefers-reduced-motion`, and the hero animation pauses while it is off-screen.
 - Fonts load from Google Fonts (Chakra Petch, Inter, JetBrains Mono). Everything else is self-hosted.
-- The hero's robotic wolf, landscape, and HUD elements are original artwork made for this site.
+- The hero's interactive robotic cat (eyes follow the pointer; click, tap, or press Enter to pet it), landscape, and HUD elements are original artwork made for this site.
