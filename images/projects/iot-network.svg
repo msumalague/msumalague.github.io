@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="JetBrains Mono, Consolas, Menlo, monospace">
+  <title>IoT device type identification pipeline</title>
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0v32" fill="none" stroke="#5ef2d6" stroke-opacity=".05"/>
+    </pattern>
+    <radialGradient id="core" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#5ef2d6" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#5ef2d6" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .flow { stroke-dasharray: 4 6; animation: flow 1.8s linear infinite; }
+      .flow-out { stroke-dasharray: 3 7; animation: flow 2.4s linear infinite; }
+      @keyframes flow { to { stroke-dashoffset: -20; } }
+      @media (prefers-reduced-motion: reduce) { .flow, .flow-out { animation: none; } }
+    </style>
+  </defs>
+  <rect width="800" height="500" fill="#07110e"/>
+  <rect width="800" height="500" fill="url(#grid)"/>
+
+  <text x="40" y="52" fill="#5ef2d6" font-size="12" letter-spacing="1.5">TOP-5 TRAFFIC FEATURES</text>
+  <text x="40" y="70" fill="#80948a" font-size="11">XGBoost feature importance</text>
+  <text x="566" y="52" fill="#f4b860" font-size="12" letter-spacing="1.5">DEVICE CLASS</text>
+  <text x="566" y="70" fill="#80948a" font-size="11">10 categories</text>
+
+  <!-- feature → model edges -->
+  <g fill="none" stroke="#5ef2d6" stroke-opacity=".45" stroke-width="1.2" class="flow">
+    <path d="M290 122C340 122 330 250 362 250"/>
+    <path d="M290 192C340 192 330 250 362 250"/>
+    <path d="M290 262C330 262 340 250 362 250"/>
+    <path d="M290 332C340 332 330 250 362 250"/>
+    <path d="M290 402C340 402 330 250 362 250"/>
+  </g>
+
+  <!-- features (importance values from the project notebook) -->
+  <g font-size="12.5" fill="#e7f0eb">
+    <text x="40" y="114">http_time_avg</text>
+    <text x="40" y="184">ttl_avg</text>
+    <text x="40" y="254">packet_inter_arrivel_B_firstQ</text>
+    <text x="40" y="324">packet_inter_arrivel_A_sum</text>
+    <text x="40" y="394">packet_inter_arrivel_B_min</text>
+  </g>
+  <g fill="#5ef2d6">
+    <rect x="40" y="122" width="210" height="6"/>
+    <rect x="40" y="192" width="99" height="6" fill-opacity=".85"/>
+    <rect x="40" y="262" width="80" height="6" fill-opacity=".75"/>
+    <rect x="40" y="332" width="79" height="6" fill-opacity=".7"/>
+    <rect x="40" y="402" width="54" height="6" fill-opacity=".6"/>
+  </g>
+  <g fill="none" stroke="#5ef2d6" stroke-opacity=".15">
+    <rect x="40" y="122" width="210" height="6"/><rect x="40" y="192" width="210" height="6"/><rect x="40" y="262" width="210" height="6"/><rect x="40" y="332" width="210" height="6"/><rect x="40" y="402" width="210" height="6"/>
+  </g>
+  <g font-size="11" fill="#80948a">
+    <text x="258" y="129">.249</text><text x="258" y="199">.117</text><text x="258" y="269">.095</text><text x="258" y="339">.094</text><text x="258" y="409">.064</text>
+  </g>
+
+  <!-- model -->
+  <circle cx="420" cy="250" r="96" fill="url(#core)"/>
+  <path d="M420 192l50 29v58l-50 29-50-29v-58z" fill="#0c1814" stroke="#5ef2d6" stroke-width="1.6"/>
+  <path d="M420 204l40 23v46l-40 23-40-23v-46z" fill="none" stroke="#5ef2d6" stroke-opacity=".25"/>
+  <text x="420" y="248" text-anchor="middle" fill="#e7f0eb" font-size="15" font-family="Segoe UI, Inter, sans-serif" font-weight="600">XGBoost</text>
+  <text x="420" y="268" text-anchor="middle" fill="#80948a" font-size="11">classifier</text>
+
+  <!-- model → classes -->
+  <g fill="none" stroke="#f4b860" stroke-opacity=".35" stroke-width="1" class="flow-out">
+    <path d="M470 250C510 250 520 92 552 92"/><path d="M470 250C510 250 520 129 552 129"/><path d="M470 250C510 250 520 166 552 166"/><path d="M470 250C510 250 520 203 552 203"/><path d="M470 250C510 250 520 240 552 240"/><path d="M470 250C510 250 520 277 552 277"/><path d="M470 250C510 250 520 314 552 314"/><path d="M470 250C510 250 520 351 552 351"/><path d="M470 250C510 250 520 388 552 388"/><path d="M470 250C510 250 520 425 552 425"/>
+  </g>
+  <g fill="#0c1814" stroke="#f4b860" stroke-width="1.2">
+    <circle cx="556" cy="92" r="4"/><circle cx="556" cy="129" r="4"/><circle cx="556" cy="166" r="4"/><circle cx="556" cy="203" r="4"/><circle cx="556" cy="240" r="4"/><circle cx="556" cy="277" r="4"/><circle cx="556" cy="314" r="4"/><circle cx="556" cy="351" r="4"/><circle cx="556" cy="388" r="4"/><circle cx="556" cy="425" r="4"/>
+  </g>
+  <g font-size="12.5" fill="#aebfb6">
+    <text x="570" y="96">baby_monitor</text><text x="570" y="133">lights</text><text x="570" y="170">motion_sensor</text><text x="570" y="207">security_camera</text><text x="570" y="244">smoke_detector</text><text x="570" y="281">socket</text><text x="570" y="318">thermostat</text><text x="570" y="355">TV</text><text x="570" y="392">watch</text><text x="570" y="429">water_sensor</text>
+  </g>
+
+  <text x="40" y="468" fill="#80948a" font-size="11">1,000 sessions · 297 traffic features · 10 balanced classes</text>
+</svg>
