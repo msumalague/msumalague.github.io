@@ -1,9 +1,9 @@
 # msumalague.github.io
 
-Personal portfolio of **Mairene Sumalague**, AI/ML Engineer and Software Engineer.
+Personal portfolio of **Mairene Sumalague**, AI/ML Engineer and Web & Mobile Developer.
 Live at <https://msumalague.github.io/>.
 
-A static site with no build step: plain HTML, CSS, and vanilla JavaScript, served by GitHub Pages from the `main` branch.
+A static site with no build step: plain HTML, CSS, and vanilla JavaScript, plus a self-hosted copy of three.js for the 3D cat, served by GitHub Pages from the `main` branch.
 
 ## Structure
 
@@ -12,11 +12,14 @@ index.html              page markup (hero, about, projects, skills, experience, 
 css/main.css            all styles; design tokens live at the top in :root
 js/projects.js          project data: edit this to add or change projects
 js/main.js              navigation, scroll reveals, project cards/filters/dialog, hero scene
+js/city.js              procedural neon city (hero backdrop and footer skyline band)
+js/cat3d.js             interactive 3D robot cat (three.js), with a synthesized purr
+js/fx.js                animations and neon accents below the hero
+vendor/three/           self-hosted three.js r160 (MIT license)
 images/profile/         profile photo (original + optimized 320/640 px WebP and JPG)
-images/projects/        optimized project images (card crops + full size) and iot-network.svg
-images/scene/           generated SVG landscape layers for the hero
+images/projects/        optimized project images (card crops + full size) and original SVG illustrations
 images/portfolio/       original project screenshots (source files for images/projects/)
-tools/                  scripts that regenerate the optimized images and scene layers
+tools/                  image regeneration script and the local preview server
 ```
 
 ## Add a project
@@ -35,13 +38,16 @@ Only link repositories and demos that are public and working, and keep descripti
 ## Preview locally
 
 ```
-python -m http.server 8765
+python tools/serve.py
 ```
+
+Or `python -m http.server 8765` on systems where `.js` files are served as JavaScript (some Windows setups serve them as plain text, which blocks the 3D cat module).
 
 Then open <http://localhost:8765/>.
 
 ## Notes
 
-- Motion respects `prefers-reduced-motion`, and the hero animation pauses while it is off-screen.
-- Fonts load from Google Fonts (Chakra Petch, Inter, JetBrains Mono). Everything else is self-hosted.
-- The hero's interactive robotic cat (eyes follow the pointer; click, tap, or press Enter to pet it), landscape, and HUD elements are original artwork made for this site.
+- Motion respects `prefers-reduced-motion` and the on-page "Pause motion" control, and animations pause while they are off-screen.
+- Fonts load from Google Fonts (Chakra Petch, Inter, JetBrains Mono, Dela Gothic One, DotGothic16). Everything else is self-hosted.
+- The hero artwork, its interactive creature, and the HUD elements are original artwork made for this site.
+- Client projects are anonymized. Their cards use original illustrations instead of real interfaces or data.

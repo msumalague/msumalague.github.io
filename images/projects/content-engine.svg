@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="JetBrains Mono, Consolas, Menlo, monospace">
-  <title>GEO Studio: original illustration of the transcript-to-content pipeline</title>
+  <title>Voice-of-Customer Content Engine: original illustration of the transcript-to-content pipeline</title>
   <defs>
     <pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0v32" fill="none" stroke="#b794ff" stroke-opacity=".05"/></pattern>
     <radialGradient id="cl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#b794ff" stop-opacity=".22"/><stop offset="1" stop-color="#b794ff" stop-opacity="0"/></radialGradient>
@@ -14,7 +14,7 @@
   </defs>
   <rect width="800" height="500" fill="#0b0814"/>
   <rect width="800" height="500" fill="url(#g)"/>
-  <text x="40" y="52" fill="#b794ff" font-size="12" letter-spacing="1.5">GEO STUDIO · CONTENT INTELLIGENCE</text>
+  <text x="40" y="52" fill="#b794ff" font-size="12" letter-spacing="1.5">VOICE-OF-CUSTOMER · CONTENT ENGINE</text>
   <text x="40" y="70" fill="#8f86a0" font-size="11">transcripts → redaction → retrieval → decision gate → drafts + QA</text>
 
   <!-- sales calls -->

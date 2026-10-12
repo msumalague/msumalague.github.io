@@ -55,13 +55,13 @@
       <path d="M-42 0a42 42 0 0 1 84 0" fill="none" stroke="#221a36" stroke-width="8"/>
       <path d="M-42 0a42 42 0 0 1 60-38" fill="none" stroke="#b794ff" stroke-width="8"/>
       <g><path d="M0 0 18-30" stroke="#efeaf7" stroke-width="2"/></g>
-      <circle r="3" fill="#efeaf7"/><text y="20" fill="#bdb4cc">upturn 0–100</text>
+      <circle r="3" fill="#efeaf7"/><text y="20" fill="#bdb4cc">upturn 0 to 100</text>
     </g>
     <g transform="translate(690 222)">
       <path d="M-42 0a42 42 0 0 1 84 0" fill="none" stroke="#221a36" stroke-width="8"/>
       <path d="M-42 0a42 42 0 0 1 22-36" fill="none" stroke="#f4b860" stroke-width="8"/>
       <g><path d="M0 0-24-28" stroke="#efeaf7" stroke-width="2"/></g>
-      <circle r="3" fill="#efeaf7"/><text y="20" fill="#bdb4cc">downturn 0–100</text>
+      <circle r="3" fill="#efeaf7"/><text y="20" fill="#bdb4cc">downturn 0 to 100</text>
     </g>
   </g>
   <path d="M612 172h30" stroke="#b794ff" stroke-opacity=".6" fill="none" class="flow"/>

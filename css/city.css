@@ -1,0 +1,94 @@
+/* ==========================================================================
+   Neon City (js/city.js): animated cyberpunk skyline for the hero and the
+   footer band. The container must be positioned (absolute inset 0 for the
+   hero, a fixed-height block for the band). Everything here is decorative.
+   ========================================================================== */
+
+.neon-city {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+  isolation: isolate;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: opacity 0.9s ease-out;
+}
+.neon-city--hero { background: #08060d; }
+/* Hidden until the first build (it waits briefly for the sign fonts), then fades in. */
+.neon-city.is-pending { opacity: 0; }
+.neon-city.is-still { transition: none; }
+
+/* Layers are sized and offset inline (they overscan the box for parallax). */
+.neon-city .nc-layer,
+.neon-city .nc-beam {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  max-width: none;
+  max-height: none;
+}
+.neon-city .nc-beams { position: absolute; inset: 0; }
+
+/* Soft dark scrim under the page copy (sized inline from the measured copy box). */
+.neon-city .nc-scrim {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: radial-gradient(closest-side, rgba(6, 3, 14, 0.4), rgba(6, 3, 14, 0.24) 62%, rgba(6, 3, 14, 0));
+}
+
+/* Mist banks drift slowly between the tiers. */
+.neon-city .nc-mist {
+  will-change: transform;
+  animation: nc-drift 84s ease-in-out infinite alternate;
+}
+.neon-city .nc-mist--b {
+  opacity: 0.9;
+  animation-duration: 58s;
+  animation-direction: alternate-reverse;
+}
+@keyframes nc-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-17%, 0, 0); }
+}
+
+/* Searchlights sweep the sky from behind the far towers. */
+.neon-city .nc-beam {
+  transform-origin: 50% 100%;
+  transform: rotate(var(--nc-a0, -20deg));
+  will-change: transform;
+  animation: nc-sweep 18s ease-in-out infinite alternate;
+}
+@keyframes nc-sweep {
+  from { transform: rotate(var(--nc-a0, -20deg)); }
+  to { transform: rotate(var(--nc-a1, 20deg)); }
+}
+
+/* Band: the top fades into the page so the skyline rises out of the background. */
+.neon-city--band {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.55) 22%, #000 48%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.55) 22%, #000 48%);
+}
+
+/* Paused states: motion off (reduced motion or the site's Pause control), offscreen, or a hidden tab. */
+.neon-city.is-still .nc-mist,
+.neon-city.is-still .nc-beam,
+.neon-city.is-offscreen .nc-mist,
+.neon-city.is-offscreen .nc-beam,
+.motion-paused .neon-city .nc-mist,
+.motion-paused .neon-city .nc-beam {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-city { transition: none; }
+  .neon-city .nc-mist,
+  .neon-city .nc-beam { animation: none; }
+}
+
+@media print {
+  .neon-city { display: none; }
+}

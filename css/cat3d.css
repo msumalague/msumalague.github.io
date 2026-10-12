@@ -1,0 +1,217 @@
+/* ==========================================================================
+   Kopicat, the owner's cyborg cat (js/cat3d.js). Load after css/main.css.
+   The static image (.cat-img) is the fallback. When WebGL starts, the module
+   adds .has-3d to .creature and the living image fades in over it.
+   ========================================================================== */
+
+/* Layout anchor: exactly the cat image box (644 x 732). Paws rest near the bottom. */
+.creature[data-creature] {
+  right: clamp(1.5rem, 7vw, 8rem);
+  bottom: clamp(0.5rem, 2vh, 1.5rem);
+  width: clamp(13rem, min(26vw, 34vh), 25rem);
+  width: clamp(13rem, min(26vw, 34svh), 25rem);
+  aspect-ratio: 644 / 732;
+}
+
+/* Desktop: the Pause motion control sits on the left, just above the facts strip,
+   so the bottom right corner belongs to the cat. */
+@media (min-width: 56.0625em) {
+  .hero__meta .motion-toggle {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    margin: 0;
+    min-height: 2.25rem;
+    padding-block: 0.3rem;
+  }
+}
+
+/* Static fallback image (no WebGL, or before the module is ready). */
+.creature[data-creature] > .cat-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; max-width: none;
+  object-fit: contain;
+  transform-origin: 46% 97%;
+  filter: drop-shadow(0 0 14px rgba(111, 140, 255, 0.28));
+  animation: kopiBreathe 4.6s ease-in-out infinite;
+}
+@keyframes kopiBreathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.006, 1.012); }
+}
+.creature.is-purring > .cat-img { animation: kopiPurr 0.12s linear infinite; }
+@keyframes kopiPurr {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0.5px, -0.4px); }
+}
+.creature.has-3d > .cat-img {
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+
+/* Render surface: larger than the anchor so tilt, the hop, glow and sparks never clip.
+   It never takes pointer input (the module hit-tests the cat's own pixels). */
+.creature__stage {
+  position: absolute;
+  left: -38%; right: -38%; top: -26%; bottom: -16%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.creature.has-3d .creature__stage { opacity: 1; }
+.creature__stage canvas {
+  position: absolute; inset: 0;
+  display: block; width: 100%; height: 100%; max-width: none;
+}
+
+/* Sparks and hearts on a pet */
+.kopi-fx { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.kopi-spark {
+  position: absolute; left: 0; top: 0;
+  width: 6px; height: 6px; margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #cfe0ff;
+  box-shadow: 0 0 8px 2px rgba(111, 140, 255, 0.9);
+}
+.kopi-spark--violet { background: #ead9ff; box-shadow: 0 0 8px 2px rgba(183, 148, 255, 0.9); }
+.kopi-heart {
+  position: absolute; left: 0; top: 0;
+  width: 16px; height: 16px; margin: -8px 0 0 -8px;
+  color: #c9a8ff;
+  filter: drop-shadow(0 0 6px rgba(183, 148, 255, 0.9));
+}
+.kopi-heart svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+/* Keyboard access: the pet button stays focusable and draws its ring around the cat. */
+.creature.has-3d .creature__pet {
+  position: absolute;
+  left: 2%; right: 2%; top: 0; bottom: 2%;
+  width: auto; height: auto;
+  padding: 0; margin: 0;
+  background: none; border: 0; opacity: 1;
+  border-radius: 44% 44% 10% 10% / 34% 34% 8% 8%;
+  pointer-events: none;
+  z-index: 2;
+}
+.creature.has-3d .creature__pet:focus { outline: none; }
+.creature.has-3d .creature__pet:focus-visible {
+  outline: 2px dashed var(--c-accent, #b794ff);
+  outline-offset: 6px;
+  box-shadow: 0 0 0 10px rgba(183, 148, 255, 0.08), 0 0 28px rgba(183, 148, 255, 0.22);
+}
+
+/* "pet me" hint, placed by the module beside the chest */
+.creature.has-3d .creature__hint { left: 0; top: 0; z-index: 2; will-change: transform; }
+.creature.was-petted .creature__hint { animation: none; opacity: 0; transition: opacity 0.3s; }
+
+/* HUD above the head (positioned by JS): detection tag plus the purr mute button. */
+.cat3d-hud {
+  position: absolute; left: 0; top: 0; z-index: 3;
+  display: flex; align-items: center; gap: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  will-change: transform;
+}
+.cat3d-hud.is-on, .cat3d-hud:focus-within { opacity: 1; }
+
+.cat3d-tag {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 0.5em;
+  padding: 0.3em 0.65em 0.32em 0.55em;
+  font-family: var(--f-mono, "JetBrains Mono", ui-monospace, Consolas, monospace);
+  font-size: clamp(10px, 0.72rem, 12.5px);
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: #e6e8ff;
+  background: rgba(8, 7, 22, 0.74);
+  border: 1px solid rgba(143, 162, 255, 0.72);
+  border-radius: 2px;
+  box-shadow: 0 0 16px rgba(143, 162, 255, 0.22), inset 0 0 10px rgba(143, 162, 255, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.cat3d-tag::before {
+  content: ""; flex: none; width: 6px; height: 6px; border-radius: 1px;
+  background: #ff8a2a; box-shadow: 0 0 8px #ff6a00;
+}
+.cat3d-tag::after {
+  content: ""; position: absolute; left: var(--lead, 30%); top: 100%;
+  width: 1px; height: 14px;
+  background: linear-gradient(180deg, rgba(143, 162, 255, 0.85), rgba(143, 162, 255, 0));
+}
+.cat3d-tag.is-mood {
+  color: #fff;
+  border-color: rgba(183, 148, 255, 0.95);
+  box-shadow: 0 0 18px rgba(183, 148, 255, 0.4), inset 0 0 10px rgba(183, 148, 255, 0.16);
+}
+.cat3d-tag.is-mood::before { background: #b794ff; box-shadow: 0 0 8px #b794ff; }
+
+/* Purr mute toggle: a small speaker attached to the tag. */
+.cat3d-mute {
+  position: relative; flex: none;
+  display: grid; place-items: center;
+  width: 26px; height: 26px; padding: 0; margin: 0;
+  color: #e6e8ff;
+  background: rgba(8, 7, 22, 0.74);
+  border: 1px solid rgba(143, 162, 255, 0.72);
+  border-radius: 2px;
+  box-shadow: 0 0 16px rgba(143, 162, 255, 0.22), inset 0 0 10px rgba(143, 162, 255, 0.1);
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.cat3d-mute::before { content: ""; position: absolute; inset: -5px; }
+.cat3d-mute svg {
+  width: 15px; height: 15px; overflow: visible;
+  fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.cat3d-mute .cat3d-mute__spk { fill: currentColor; stroke-width: 1.2; }
+.cat3d-mute .cat3d-mute__x { display: none; }
+.cat3d-mute[aria-pressed="true"] { color: #a9a3c4; border-color: rgba(143, 162, 255, 0.45); }
+.cat3d-mute[aria-pressed="true"] .cat3d-mute__wave { display: none; }
+.cat3d-mute[aria-pressed="true"] .cat3d-mute__x { display: inline; }
+.cat3d-mute:hover { color: #fff; border-color: var(--c-accent, #b794ff); }
+.cat3d-mute:focus { outline: none; }
+.cat3d-mute:focus-visible {
+  outline: 2px solid var(--c-accent, #b794ff);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(183, 148, 255, 0.18), 0 0 18px rgba(183, 148, 255, 0.4);
+}
+@media (pointer: coarse) {
+  .cat3d-mute { width: 32px; height: 32px; }
+  .cat3d-mute svg { width: 17px; height: 17px; }
+}
+
+/* Cursor feedback while the pointer is over the cat (classes set on <html>). */
+html.cat3d-grab, html.cat3d-grab * { cursor: grab !important; }
+html.cat3d-grabbing, html.cat3d-grabbing * {
+  cursor: grabbing !important;
+  -webkit-user-select: none; user-select: none;
+}
+
+/* Small screens: the cat stands bottom center, below the hero copy and above the hero controls. */
+@media (max-width: 56em) {
+  .creature[data-creature] {
+    width: min(56vw, 15rem);
+    left: calc(50% - min(28vw, 7.5rem));
+    right: auto;
+    bottom: 9.5rem;
+  }
+}
+@media (max-width: 44em) {
+  .creature[data-creature] { bottom: 6.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creature[data-creature] > .cat-img, .creature.is-purring > .cat-img { animation: none; }
+  .creature__stage, .cat3d-hud, .cat3d-tag, .cat3d-mute, .creature.has-3d > .cat-img { transition: none; }
+}
+.motion-paused .creature[data-creature] > .cat-img { animation-play-state: paused; }
+.motion-paused .creature__stage, .motion-paused .cat3d-hud, .motion-paused .cat3d-tag { transition: none; }
+
+@media print {
+  .creature__stage, .cat3d-hud { display: none !important; }
+  .creature.has-3d > .cat-img { opacity: 1; visibility: visible; }
+}

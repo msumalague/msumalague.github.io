@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mairene Sumalague — AI/ML Engineer &amp; Software Engineer</title>
-  <meta name="description" content="Portfolio of Mairene Sumalague, an AI/ML engineer and software engineer building machine learning systems, computer vision pipelines, data workflows, and AI-enabled hardware prototypes.">
+  <title>Mairene Sumalague | AI/ML Engineer &amp; Web and Mobile Developer</title>
+  <meta name="description" content="Portfolio of Mairene Sumalague, an AI/ML engineer and full-stack web and mobile developer building machine learning systems, generative AI products, React and FastAPI web apps, and Flutter mobile apps.">
   <meta name="author" content="Mairene Sumalague">
   <meta name="theme-color" content="#08060d">
   <meta name="color-scheme" content="dark">
@@ -12,26 +12,35 @@
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://msumalague.github.io/">
-  <meta property="og:title" content="Mairene Sumalague — AI/ML Engineer &amp; Software Engineer">
-  <meta property="og:description" content="Machine learning systems, computer vision, data pipelines, and AI-enabled hardware.">
+  <meta property="og:title" content="Mairene Sumalague | AI/ML Engineer &amp; Web and Mobile Developer">
+  <meta property="og:description" content="Machine learning and generative AI systems, plus the full-stack web apps and Flutter mobile apps around them.">
   <meta property="og:image" content="https://msumalague.github.io/images/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Mairene Sumalague, AI/ML Engineer and Software Engineer: portfolio hero with an original interactive robotic cat illustration">
+  <meta property="og:image:alt" content="Mairene Sumalague portfolio hero with her portrait and an original interactive robotic cat illustration">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mairene Sumalague | AI/ML Engineer &amp; Web and Mobile Developer">
+  <meta name="twitter:description" content="Machine learning and generative AI systems, plus the full-stack web apps and Flutter mobile apps around them.">
 
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="icon.png" type="image/png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" href="favicon.svg?v=4" type="image/svg+xml">
+  <link rel="icon" href="icon.png?v=4" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=4">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Dela+Gothic+One&family=DotGothic16&display=swap">
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/city.css">
+  <link rel="stylesheet" href="css/cat3d.css">
+  <link rel="stylesheet" href="css/fx.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}</script>
 
   <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
   <script src="js/projects.js" defer></script>
+  <script src="js/city.js" defer></script>
   <script src="js/main.js" defer></script>
+  <script src="js/fx.js" defer></script>
+  <script type="module" src="js/cat3d.js"></script>
 
   <script type="application/ld+json">
   {
@@ -43,8 +52,9 @@
     "jobTitle": "Lead Machine Learning Engineer",
     "worksFor": { "@type": "Organization", "name": "Triseed Software Inc" },
     "alumniOf": { "@type": "CollegeOrUniversity", "name": "Batangas State University" },
+    "knowsAbout": ["Machine learning", "Generative AI", "AI agents", "Computer vision", "Data engineering", "Full-stack web development", "Mobile app development", "React", "TypeScript", "FastAPI", "Flask", "PostgreSQL", "Flutter", "Dart", "Firebase"],
     "hasCredential": [
-      { "@type": "EducationalOccupationalCredential", "name": "Claude Certified Architect – Foundations", "credentialCategory": "certification", "recognizedBy": { "@type": "Organization", "name": "Anthropic" }, "url": "https://www.credly.com/badges/23784f5e-6542-49ef-b855-a7747b54a843" },
+      { "@type": "EducationalOccupationalCredential", "name": "Claude Certified Architect - Foundations", "credentialCategory": "certification", "recognizedBy": { "@type": "Organization", "name": "Anthropic" }, "url": "https://www.credly.com/badges/23784f5e-6542-49ef-b855-a7747b54a843" },
       { "@type": "EducationalOccupationalCredential", "name": "Oracle Cloud Infrastructure 2025 Certified Data Science Professional", "credentialCategory": "certification", "recognizedBy": { "@type": "Organization", "name": "Oracle" } },
       { "@type": "EducationalOccupationalCredential", "name": "Oracle Cloud Infrastructure 2025 Certified Generative AI Professional", "credentialCategory": "certification", "recognizedBy": { "@type": "Organization", "name": "Oracle" } },
       { "@type": "EducationalOccupationalCredential", "name": "Oracle Cloud Infrastructure 2025 Certified AI Foundations Associate", "credentialCategory": "certification", "recognizedBy": { "@type": "Organization", "name": "Oracle" } }
@@ -75,8 +85,11 @@
     <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3.5v14H7zm6.5 0H17v14h-3.5z"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13l10.5-6.5Z"/></symbol>
+    <symbol id="i-build-ml" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="13" height="13" rx="1.5"/><path d="M9.5 2.5v3M14.5 2.5v3M9.5 18.5v3M14.5 18.5v3M2.5 9.5h3M2.5 14.5h3M18.5 9.5h3M18.5 14.5h3"/><path d="m9.6 10 1.6 4M14.4 10l-1.6 4M10.4 9h3.2" stroke-opacity=".6"/><circle cx="9.2" cy="9" r="1.2"/><circle cx="14.8" cy="9" r="1.2"/><circle cx="12" cy="15.2" r="1.2"/></g></symbol>
+    <symbol id="i-build-web" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="1.5"/><path d="M2.5 8h19"/><path d="m9 11.5-2.5 2.5L9 16.5M15 11.5l2.5 2.5-2.5 2.5M13 11l-2 6" stroke-opacity=".75"/></g><g fill="currentColor"><circle cx="5" cy="6" r=".7"/><circle cx="7.2" cy="6" r=".7"/></g></symbol>
+    <symbol id="i-build-mobile" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.2"/><path d="M10.5 5.2h3"/><path d="M9 9.5h6M9 12.5h6M9 15.5h3.5" stroke-opacity=".7"/></g><circle cx="12" cy="18.7" r=".8" fill="currentColor"/></symbol>
     <symbol id="i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
-    <symbol id="i-mark" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M16 2.5 27.7 9.25v13.5L16 29.5 4.3 22.75V9.25Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M10 21.5v-10l6 5.5 6-5.5v10"/><circle cx="16" cy="23.4" r="1.5" fill="#b794ff"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M16 2.5 27.7 9.25v13.5L16 29.5 4.3 22.75V9.25Z"/><path fill="none" style="stroke: var(--mark-m, #c9b0ff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M10 21.5v-10l6 5.5 6-5.5v10"/><circle cx="16" cy="23.4" r="1.5" fill="#b794ff"/></symbol>
   </svg>
 
   <!-- ============================== Header ============================== -->
@@ -115,176 +128,16 @@
     <section class="hero" id="top" aria-labelledby="hero-title">
       <div class="hero__scene" aria-hidden="true" data-scene>
         <div class="scene__sky"></div>
-        <div class="scene__sun"></div>
-        <img class="scene__layer scene__layer--far" src="images/scene/ridge-far.svg" alt="" data-depth="0.12">
-        <div class="scene__fog scene__fog--back" data-depth="0.18"></div>
-        <img class="scene__layer scene__layer--mid" src="images/scene/ridge-mid.svg" alt="" data-depth="0.26">
-        <svg class="scene__bird" viewBox="0 0 120 50" data-depth="0.2">
-          <g class="bird__body">
-            <path d="M34 24 44 21l26 1 16 2-16 3H44Z" fill="#171127"/>
-            <path d="m86 24 12-4-2 4 2 4Z" fill="#171127"/>
-            <path class="bird__wing bird__wing--far" d="M52 22 66 4l8-2-4 8-6 12Z" fill="#1d1630"/>
-            <path class="bird__wing bird__wing--near" d="m54 26 16 16 10 4-6-10-8-10Z" fill="#120d1f"/>
-            <circle cx="40" cy="23" r="1.3" fill="#b794ff"/>
-          </g>
-        </svg>
-        <div class="scene__fog scene__fog--mid" data-depth="0.3"></div>
-        <img class="scene__layer scene__layer--near" src="images/scene/ridge-near.svg" alt="" data-depth="0.4">
+        <div class="scene__city" data-city="hero" data-depth="0.05"></div>
         <canvas class="scene__particles" data-particles></canvas>
 
         <div class="scene__vignette"></div>
       </div>
 
-      <!-- Original robotic cat: interactive (eyes follow the pointer; click, tap, or press Enter to pet) -->
+      <!-- Kopicat, the owner's cat as a cyborg, brought to life by js/cat3d.js. Click, tap, or press Enter to pet. -->
       <div class="creature" data-creature data-depth="0.5">
-        <svg class="cat" viewBox="0 0 820 440" aria-hidden="true" focusable="false">
-          <defs>
-            <linearGradient id="catBody" gradientUnits="userSpaceOnUse" x1="0" y1="110" x2="0" y2="420">
-              <stop offset="0" stop-color="#2e2347"/>
-              <stop offset=".45" stop-color="#171028"/>
-              <stop offset="1" stop-color="#07050c"/>
-            </linearGradient>
-            <linearGradient id="catFar" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="420">
-              <stop offset="0" stop-color="#1a1430"/>
-              <stop offset="1" stop-color="#06040b"/>
-            </linearGradient>
-            <linearGradient id="catRim" gradientUnits="userSpaceOnUse" x1="0" y1="100" x2="0" y2="420">
-              <stop offset="0" stop-color="#b794ff" stop-opacity=".95"/>
-              <stop offset=".38" stop-color="#b794ff" stop-opacity=".32"/>
-              <stop offset=".75" stop-color="#b794ff" stop-opacity=".05"/>
-            </linearGradient>
-            <radialGradient id="catIris" cx=".5" cy=".45" r=".62">
-              <stop offset="0" stop-color="#f6f0ff"/>
-              <stop offset=".45" stop-color="#c9b0ff"/>
-              <stop offset="1" stop-color="#7c4dff"/>
-            </radialGradient>
-            <radialGradient id="eyeGlow">
-              <stop offset="0" stop-color="#b794ff" stop-opacity=".75"/>
-              <stop offset="1" stop-color="#b794ff" stop-opacity="0"/>
-            </radialGradient>
-            <radialGradient id="coreGlow">
-              <stop offset="0" stop-color="#f4b860" stop-opacity=".8"/>
-              <stop offset="1" stop-color="#f4b860" stop-opacity="0"/>
-            </radialGradient>
-            <linearGradient id="beamGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#fff" stop-opacity="0"/>
-              <stop offset=".75" stop-color="#fff" stop-opacity=".9"/>
-              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
-            </linearGradient>
-            <mask id="scanMask" maskUnits="userSpaceOnUse" x="0" y="0" width="820" height="440">
-              <rect class="cat__beam" x="-150" y="0" width="150" height="440" fill="url(#beamGrad)"/>
-            </mask>
-            <clipPath id="eyeClipL"><path d="M182 216C188 202 212 200 220 212 212 226 190 228 182 216Z"/></clipPath>
-            <clipPath id="eyeClipR"><path d="M278 216C272 202 248 200 240 212 248 226 270 228 278 216Z"/></clipPath>
-
-            <path id="c-head" d="M160 190C168 168 196 154 230 154S292 168 300 190C312 216 312 244 296 262 278 280 256 286 230 286S182 280 164 262C148 244 148 216 160 190Z"/>
-            <path id="c-ear-l" d="M158 196 168 108 216 160Z"/>
-            <path id="c-ear-r" d="M302 196 292 108 244 160Z"/>
-            <path id="c-body" d="M292 262C360 240 470 236 560 246 628 254 668 296 664 350 662 382 650 404 624 412L360 414C318 412 296 396 290 360 286 320 284 286 292 262Z"/>
-            <path id="c-haunch" d="M520 300C560 276 630 284 650 330 664 372 640 408 600 412H520C500 380 496 330 520 300Z"/>
-            <path id="c-legs-near" d="M286 318 336 330 344 384 300 400 280 360ZM300 384 196 392 170 398 166 414H306ZM178 394C160 392 142 398 140 408V414H182ZM520 396 468 398 452 404V414H530Z"/>
-            <path id="c-legs-far" d="M300 372 210 384 186 392 182 412 300 414Z"/>
-            <path id="c-tail" d="M648 376C700 368 736 330 748 288 758 252 752 224 732 210"/>
-          </defs>
-
-          <!-- ledge -->
-          <path d="M110 440 152 424l88-8 120 2 140-4 90 4 60 6 52 16Z" fill="#06040b"/>
-          <path d="M240 416 280 420M430 414l46 4M600 416l40 6" stroke="#2a2240" stroke-width="1.2" fill="none" opacity=".6"/>
-
-          <g class="cat__body">
-            <g class="cat__torso" transform="matrix(0.86 0 0 1 40.6 0)">
-            <!-- tail -->
-            <g class="cat__tail">
-              <use href="#c-tail" fill="none" stroke="#1d1631" stroke-width="22" stroke-linecap="round" stroke-dasharray="30 5"/>
-              <use href="#c-tail" fill="none" stroke="#b794ff" stroke-opacity=".35" stroke-width="1.2"/>
-              <use class="cat__conduit" href="#c-tail" fill="none" stroke="#b794ff" stroke-width="1.6" stroke-linecap="round"/>
-              <circle class="cat__glow" cx="732" cy="210" r="18" fill="url(#eyeGlow)"/>
-              <circle cx="732" cy="210" r="6" fill="#ddccff"/>
-            </g>
-
-            <use href="#c-legs-far" fill="url(#catFar)" stroke="#b794ff" stroke-opacity=".22"/>
-            <use href="#c-body" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.6"/>
-            <g fill="none" stroke="#c9b0ff" stroke-opacity=".16" stroke-width="1.1">
-              <path d="M352 246c-4 50-4 110-2 166M404 240c-2 56-2 116 0 172M456 238v176M300 300c18-10 40-2 46 28"/>
-            </g>
-            <path class="cat__conduit" d="M302 258c66-20 168-22 258-12 60 8 92 36 100 72" fill="none" stroke="#b794ff" stroke-width="1.6" stroke-linecap="round"/>
-
-            <use href="#c-haunch" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.4"/>
-            <path d="M540 312c30-18 80-12 96 22M548 340c20-10 54-6 66 16" fill="none" stroke="#c9b0ff" stroke-opacity=".18"/>
-            <use href="#c-legs-near" fill="url(#catBody)" stroke="#b794ff" stroke-opacity=".38" stroke-width="1.3"/>
-            <g fill="#0e0a17" stroke="#b794ff" stroke-opacity=".45" stroke-width="1.1">
-              <circle cx="302" cy="392" r="9"/><circle cx="588" cy="360" r="11"/>
-            </g>
-            <path d="M150 404v10M160 400v14M170 398v16M462 404v10M472 401v13" stroke="#06040b" stroke-width="1.6"/>
-            </g>
-
-            <!-- collar + power core -->
-            <path d="M190 276c26 18 76 18 108 0l6 12c-34 22-86 22-118 2z" fill="#140f22" stroke="url(#catRim)" stroke-width="1.2"/>
-            <circle class="cat__glow cat__core-glow" cx="246" cy="302" r="24" fill="url(#coreGlow)"/>
-            <circle class="cat__core" cx="246" cy="302" r="6" fill="#f4b860"/>
-
-            <!-- purr ripples (shown while petted) -->
-            <g class="cat__purr" fill="none" stroke="#c9b0ff" stroke-width="1.5">
-              <circle cx="246" cy="302" r="26"/><circle cx="246" cy="302" r="26"/><circle cx="246" cy="302" r="26"/>
-            </g>
-
-            <!-- head -->
-            <g class="cat__head">
-              <g class="cat__ear cat__ear--l">
-                <use href="#c-ear-l" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.5"/>
-                <path d="M172 132 178 170 204 162Z" fill="#b794ff" fill-opacity=".28"/>
-              </g>
-              <g class="cat__ear cat__ear--r">
-                <use href="#c-ear-r" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.5"/>
-                <path d="M288 132 282 170 256 162Z" fill="#b794ff" fill-opacity=".28"/>
-              </g>
-              <use href="#c-head" fill="url(#catBody)" stroke="url(#catRim)" stroke-width="1.6"/>
-              <path d="M210 178l8-12 12 12 12-12 8 12" fill="none" stroke="#b794ff" stroke-opacity=".75" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-              <path d="M166 236c10 16 26 28 46 34M294 236c-10 16-26 28-46 34" fill="none" stroke="#c9b0ff" stroke-opacity=".2"/>
-
-              <g class="cat__eyes">
-                <g class="cat__eye">
-                  <circle class="cat__glow" cx="201" cy="214" r="22" fill="url(#eyeGlow)"/>
-                  <path d="M182 216C188 202 212 200 220 212 212 226 190 228 182 216Z" fill="url(#catIris)"/>
-                  <g clip-path="url(#eyeClipL)"><g class="cat__pupil"><ellipse cx="201" cy="214" rx="3.6" ry="9" fill="#0b0814"/><circle cx="205" cy="209" r="1.8" fill="#fff"/></g></g>
-                  <path d="M182 216C188 202 212 200 220 212 212 226 190 228 182 216Z" fill="none" stroke="#e4d8ff" stroke-opacity=".6"/>
-                </g>
-                <g class="cat__eye">
-                  <circle class="cat__glow" cx="259" cy="214" r="22" fill="url(#eyeGlow)"/>
-                  <path d="M278 216C272 202 248 200 240 212 248 226 270 228 278 216Z" fill="url(#catIris)"/>
-                  <g clip-path="url(#eyeClipR)"><g class="cat__pupil"><ellipse cx="259" cy="214" rx="3.6" ry="9" fill="#0b0814"/><circle cx="263" cy="209" r="1.8" fill="#fff"/></g></g>
-                  <path d="M278 216C272 202 248 200 240 212 248 226 270 228 278 216Z" fill="none" stroke="#e4d8ff" stroke-opacity=".6"/>
-                </g>
-              </g>
-              <g class="cat__happy" fill="none" stroke="#ddccff" stroke-width="3" stroke-linecap="round">
-                <path d="M184 218Q201 203 218 218"/><path d="M242 218Q259 203 276 218"/>
-              </g>
-              <path d="M224 236h12l-6 7z" fill="#c9b0ff"/>
-              <path d="M230 243c-1 6-8 9-13 5M230 243c1 6 8 9 13 5" fill="none" stroke="#bdb4cc" stroke-opacity=".7" stroke-width="1.4" stroke-linecap="round"/>
-              <g class="cat__whiskers" stroke="#c9b0ff" stroke-opacity=".55" stroke-width="1.1" stroke-linecap="round">
-                <path d="M198 242 130 232M198 248 124 250M200 254 132 268"/>
-                <path d="M262 242 330 232M262 248 336 250M260 254 328 268"/>
-              </g>
-            </g>
-          </g>
-
-          <!-- scan reveal: wireframe visible only under the moving beam -->
-          <g class="cat__wire" mask="url(#scanMask)" fill="none" stroke="#b794ff" stroke-width="1.2">
-            <g transform="matrix(0.86 0 0 1 40.6 0)"><use href="#c-tail"/><use href="#c-legs-far"/><use href="#c-body"/><use href="#c-haunch"/><use href="#c-legs-near"/>
-            <path d="M292 262 344 384M360 244 300 400M456 238 360 414M560 246 456 414M664 350 560 412" stroke-opacity=".5"/></g>
-            <g class="cat__wire-head"><use href="#c-ear-l"/><use href="#c-ear-r"/><use href="#c-head"/></g>
-            <path d="M160 190 230 286M300 190 230 286M230 154v132" stroke-opacity=".5"/>
-          </g>
-          <rect class="cat__scanline" x="-2" y="70" width="2" height="356" fill="#b794ff"/>
-
-          <!-- detection overlay -->
-          <g class="cat__detect" fill="none" stroke="#b794ff" stroke-width="2">
-            <path d="M112 120V92h28M694 92h28v28M722 396v28h-28M140 424h-28v-28"/>
-            <rect x="112" y="64" width="214" height="22" fill="#b794ff" fill-opacity=".14" stroke-width="1"/>
-            <text x="122" y="79.5" fill="#e4d8ff" stroke="none" font-family="JetBrains Mono, monospace" font-size="12.5" letter-spacing=".04em" data-cat-label>machine.felis · 0.98</text>
-          </g>
-        </svg>
-        <button class="creature__pet" type="button" data-cat-pet aria-label="Pet the robot cat"></button>
+        <img class="cat-img" src="images/cat/cat.webp" alt="" width="644" height="732" decoding="async">
+        <button class="creature__pet" type="button" data-cat-pet aria-label="Pet Kopicat, the robot cat"></button>
         <span class="creature__hint" aria-hidden="true" data-cat-hint><span class="creature__hint-fine">pet me</span><span class="creature__hint-touch">tap to pet</span></span>
         <span class="visually-hidden" aria-live="polite" data-cat-status></span>
       </div>
@@ -296,12 +149,12 @@
 
       <div class="container hero__inner">
         <div class="hero__copy">
-          <p class="hero__eyebrow" data-intro="1"><span class="status-dot" aria-hidden="true"></span>AI/ML Engineer · Software Engineer</p>
+          <p class="hero__eyebrow" data-intro="1"><span class="status-dot" aria-hidden="true"></span>AI/ML Engineer · Web&nbsp;&amp;&nbsp;Mobile&nbsp;Developer</p>
           <h1 class="hero__title" id="hero-title" data-intro="2">
             <span class="hero__title-line">Mairene</span>
             <span class="hero__title-line hero__title-line--accent">Sumalague</span>
           </h1>
-          <p class="hero__lead" data-intro="3">I build practical AI systems end to end: machine learning models, computer vision pipelines, and the data and software infrastructure that carries them into production, plus AI-enabled prototypes on edge hardware.</p>
+          <p class="hero__lead" data-intro="3">I design and build production AI systems and the web and mobile applications around them, from machine learning models and generative AI to full-stack products people use every day.</p>
           <div class="hero__actions" data-intro="4">
             <a class="btn btn--primary" href="#projects">Explore projects <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
             <a class="btn btn--ghost" href="#contact">Get in touch</a>
@@ -352,6 +205,54 @@
           <h2 class="section-title" id="about-title">From raw data to systems people rely on</h2>
         </header>
 
+        <div class="build">
+          <p class="build__label" id="build-label" data-reveal>What I build</p>
+          <ul class="build__grid" aria-labelledby="build-label">
+            <li class="build__item" data-reveal>
+              <article class="build-card build-card--ml" aria-labelledby="build-ml-title">
+                <div class="build-card__top">
+                  <span class="build-card__icon" aria-hidden="true"><svg><use href="#i-build-ml"/></svg></span>
+                  <span class="build-card__index" aria-hidden="true">01</span>
+                </div>
+                <h3 class="build-card__title" id="build-ml-title">AI &amp; Machine Learning</h3>
+                <p class="build-card__text">Production ML models, generative AI and agentic workflows, and computer vision, deployed with the pipelines and monitoring that keep them reliable.</p>
+                <ul class="tags" aria-label="Technologies">
+                  <li>Python</li><li>XGBoost</li><li>Claude &amp; OpenAI</li><li>RAG</li><li>MediaPipe</li>
+                </ul>
+                <p class="build-card__proof"><span>Projects</span> Content Engine, Crypto Regime Forecasting, Drone Detection</p>
+              </article>
+            </li>
+            <li class="build__item" data-reveal>
+              <article class="build-card build-card--web" aria-labelledby="build-web-title">
+                <div class="build-card__top">
+                  <span class="build-card__icon" aria-hidden="true"><svg><use href="#i-build-web"/></svg></span>
+                  <span class="build-card__index" aria-hidden="true">02</span>
+                </div>
+                <h3 class="build-card__title" id="build-web-title">Web Applications</h3>
+                <p class="build-card__text">Full-stack web apps and internal tools, from secure APIs to fast, accessible interfaces, tested end to end and shipped with CI.</p>
+                <ul class="tags" aria-label="Technologies">
+                  <li>React</li><li>TypeScript</li><li>FastAPI</li><li>Flask</li><li>PostgreSQL</li><li>Playwright</li>
+                </ul>
+                <p class="build-card__proof"><span>Projects</span> Content Engine, Analytics Explorers, Property Operations Platform</p>
+              </article>
+            </li>
+            <li class="build__item" data-reveal>
+              <article class="build-card build-card--mobile" aria-labelledby="build-mobile-title">
+                <div class="build-card__top">
+                  <span class="build-card__icon" aria-hidden="true"><svg><use href="#i-build-mobile"/></svg></span>
+                  <span class="build-card__index" aria-hidden="true">03</span>
+                </div>
+                <h3 class="build-card__title" id="build-mobile-title">Mobile Apps</h3>
+                <p class="build-card__text">Cross-platform mobile apps in Flutter, from UI design in Figma to authentication, local notifications, and API integration.</p>
+                <ul class="tags" aria-label="Technologies">
+                  <li>Flutter</li><li>Dart</li><li>Firebase</li><li>Figma</li>
+                </ul>
+                <p class="build-card__proof"><span>Projects</span> ThyroCare Android app, Bookify app design</p>
+              </article>
+            </li>
+          </ul>
+        </div>
+
         <div class="about__grid">
           <figure class="about__portrait" data-reveal>
             <div class="frame">
@@ -367,9 +268,9 @@
 
           <div class="about__body">
             <div class="prose" data-reveal>
-              <p class="lead">I'm Mairene Sumalague (Maye to most people), a machine learning and software engineer. I lead ML delivery at Triseed Software Inc, building classification and regression models, GenAI and agentic workflows, and the automated pipelines, retraining jobs, and dashboards that keep them healthy in production.</p>
-              <p>I started by teaching myself HTML, CSS, and JavaScript after class in junior high, because my school didn't offer programming, and later picked up Java and Python on my own time. Computer Engineering at Batangas State University gave me both ends of the stack: microprocessors and digital logic on one side, software, data, and applied AI on the other. That mix still shapes my work. I'm as comfortable tuning a model as I am wiring a Raspberry Pi or Jetson into a prototype.</p>
-              <p>I like taking ownership, learning fast, and shipping systems that are reliable, well structured, and easy for a team to maintain.</p>
+              <p class="lead">I'm Mairene Sumalague, a machine learning engineer and full-stack web and mobile developer who turns data into products people can depend on. I lead machine learning delivery for production platforms, designing classification and regression models, building generative AI and agentic workflows, and engineering the pipelines, retraining jobs, and dashboards that keep them reliable over time.</p>
+              <p>My path into engineering started early. My school did not offer programming, so I taught myself HTML, CSS, and JavaScript in junior high and later picked up Java and Python on my own. Computer Engineering at Batangas State University then gave me both ends of the stack, from microprocessors and digital logic to software, data, and applied AI. That foundation still shapes how I work, and I am as comfortable tuning a model as I am building a React interface or a Flutter app, or wiring a Raspberry Pi or NVIDIA Jetson into a prototype.</p>
+              <p>I value clear ownership, fast learning, and systems that are dependable, well documented, and easy for a team to maintain. Away from the keyboard, I am usually planning my next trip, most often to Japan or China, which is where the neon skyline on this page comes from. The cyborg cat standing in that skyline is Kopicat, my own cat, named for his coffee latte coat and reimagined here as a robot.</p>
             </div>
 
             <dl class="facts" data-reveal>
@@ -384,7 +285,7 @@
         <div class="lifecycle" data-reveal>
           <div class="lifecycle__head">
             <h3 class="lifecycle__title">How I work: the full ML lifecycle</h3>
-            <p>At Triseed I own models from first look at the data to monitoring in production. Every stage feeds the next, and monitoring feeds back into the start.</p>
+            <p>I take ownership of models from the first look at the data through to monitoring in production. Each stage informs the next, and what monitoring reveals feeds back into the start.</p>
           </div>
           <ol class="lifecycle__track" data-lifecycle>
             <li><span class="lifecycle__node" aria-hidden="true"></span><strong>Analyze</strong><span>Explore data and frame the problem</span></li>
@@ -412,7 +313,7 @@
             <p class="section-tag"><span>02</span>Projects</p>
             <h2 class="section-title" id="projects-title">Selected work</h2>
           </div>
-          <p class="section-intro">GenAI platforms, applied machine learning, computer vision, edge hardware, and the software around them. Public repositories are linked. Client work stays private: clients are described generically and shown with original illustrations instead of real data.</p>
+          <p class="section-intro">GenAI platforms, applied machine learning, computer vision, edge hardware, and the web and mobile apps around them. Public repositories are linked. Client work stays private: clients are described generically and shown with original illustrations instead of real data.</p>
         </header>
 
         <div class="filters" data-reveal>
@@ -423,7 +324,7 @@
             <button class="chip-btn" type="button" data-filter="cv" aria-pressed="false">Computer Vision</button>
             <button class="chip-btn" type="button" data-filter="robotics" aria-pressed="false">Robotics &amp; Edge AI</button>
             <button class="chip-btn" type="button" data-filter="data" aria-pressed="false">Data</button>
-            <button class="chip-btn" type="button" data-filter="software" aria-pressed="false">Software &amp; Mobile</button>
+            <button class="chip-btn" type="button" data-filter="software" aria-pressed="false">Web &amp; Mobile</button>
           </div>
           <p class="filters__count" aria-live="polite" data-filter-count></p>
         </div>
@@ -488,23 +389,23 @@
 
           <article class="skill-card" data-reveal>
             <div class="skill-card__icon" aria-hidden="true">
-              <svg viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 12-8 8 8 8M26 12l8 8-8 8"/><path d="m23 9-6 22" stroke-opacity=".6"/></g></svg>
+              <svg viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 28H5.5A1.5 1.5 0 0 1 4 26.5v-17A1.5 1.5 0 0 1 5.5 8h21A1.5 1.5 0 0 1 28 9.5V13"/><path d="M4 12.5h24"/><path d="m11 16.5-3 3 3 3m5-6 3 3-3 3" stroke-opacity=".6"/><rect x="24" y="16" width="12" height="19" rx="2"/><path d="M28.5 18.8h3M27.5 23h5M27.5 26.5h5" stroke-opacity=".6"/><circle cx="30" cy="31.6" r=".9"/></g></svg>
             </div>
-            <h3>Programming Languages</h3>
-            <p>Python for ML and data work, SQL for most things data, and the rest where a project needs them.</p>
+            <h3>Web &amp; Mobile Development</h3>
+            <p>Full-stack web apps and Flutter mobile apps: typed React front ends, Python APIs and databases, and responsive, accessible UI tested in real browsers.</p>
             <ul class="tags">
-              <li>Python</li><li>SQL</li><li>TypeScript</li><li>JavaScript</li><li>Java</li><li>C++</li><li>Dart</li><li>HTML &amp; CSS</li>
+              <li>React</li><li>TypeScript</li><li>Vite</li><li>Tailwind CSS</li><li>HTMX</li><li>FastAPI</li><li>Flask</li><li>REST &amp; GraphQL APIs</li><li>PostgreSQL</li><li>Flutter</li><li>Dart</li><li>Firebase</li><li>Responsive &amp; accessible UI</li><li>Playwright</li>
             </ul>
           </article>
 
           <article class="skill-card" data-reveal>
             <div class="skill-card__icon" aria-hidden="true">
-              <svg viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="7" width="28" height="9" rx="1"/><rect x="6" y="24" width="28" height="9" rx="1"/><path d="M20 16v8" stroke-opacity=".6"/><circle cx="11" cy="11.5" r="1.2" fill="currentColor"/><circle cx="11" cy="28.5" r="1.2" fill="currentColor"/></g></svg>
+              <svg viewBox="0 0 40 40"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m14 12-8 8 8 8M26 12l8 8-8 8"/><path d="m23 9-6 22" stroke-opacity=".6"/></g></svg>
             </div>
-            <h3>Backend, APIs &amp; Apps</h3>
-            <p>Backend services, secure internal web apps, and the front ends that put models in front of people.</p>
+            <h3>Programming Languages</h3>
+            <p>Python for ML and data, TypeScript and Dart for web and mobile, SQL for most things data, and the rest where a project needs them.</p>
             <ul class="tags">
-              <li>FastAPI</li><li>Flask</li><li>REST &amp; GraphQL APIs</li><li>PostgreSQL</li><li>React</li><li>HTMX</li><li>Streamlit</li><li>Flutter</li><li>Firebase</li><li>Schema design &amp; query tuning</li>
+              <li>Python</li><li>SQL</li><li>TypeScript</li><li>JavaScript</li><li>Java</li><li>C++</li><li>Dart</li><li>HTML &amp; CSS</li>
             </ul>
           </article>
 
@@ -515,7 +416,7 @@
             <h3>Data Engineering &amp; Analytics</h3>
             <p>Scheduled ingestion, ETL, and reporting pipelines, plus dashboards that track KPIs and model health.</p>
             <ul class="tags">
-              <li>dbt</li><li>Redash</li><li>Airflow</li><li>ETL pipelines</li><li>pandas</li><li>Parquet</li><li>Benchmarking</li><li>Excel automation</li><li>Grafana</li><li>Plotly</li><li>Google Analytics</li>
+              <li>dbt</li><li>Redash</li><li>Airflow</li><li>ETL pipelines</li><li>pandas</li><li>Parquet</li><li>Benchmarking</li><li>Excel automation</li><li>Streamlit</li><li>Grafana</li><li>Plotly</li><li>Google Analytics</li><li>Schema design &amp; query tuning</li>
             </ul>
           </article>
 
@@ -552,7 +453,7 @@
             <p class="section-tag"><span>04</span>Experience</p>
             <h2 class="section-title" id="experience-title">Track record</h2>
           </div>
-          <p class="section-intro">Production machine learning, data systems, and software, plus the education and certifications behind them.</p>
+          <p class="section-intro">Production machine learning, data systems, and web and mobile software, plus the education and certifications behind them.</p>
         </header>
 
         <div class="exp-layout">
@@ -564,11 +465,11 @@
               <span class="timeline__node" aria-hidden="true"></span>
               <header class="timeline__head">
                 <h4>Triseed Software Inc</h4>
-                <p class="timeline__date">Nov 2023 – Present</p>
+                <p class="timeline__date">Nov 2023 to Present</p>
               </header>
               <ol class="roles">
                 <li class="role role--current">
-                  <div class="role__head"><h5>Lead Machine Learning Engineer</h5><span>Jan 2025 – Present</span></div>
+                  <div class="role__head"><h5>Lead Machine Learning Engineer</h5><span>Jan 2025 to Present</span></div>
                   <ul class="bullets">
                     <li>Led delivery of machine learning and advanced analytics features for a production reporting platform.</li>
                     <li>Built classification and regression models, plus GenAI and agentic workflows using OpenAI tools and Gemini Cloud.</li>
@@ -579,7 +480,7 @@
                   </ul>
                 </li>
                 <li class="role">
-                  <div class="role__head"><h5>Associate Software Engineer</h5><span>Feb 2024 – Dec 2024</span></div>
+                  <div class="role__head"><h5>Associate Software Engineer</h5><span>Feb 2024 to Dec 2024</span></div>
                   <ul class="bullets">
                     <li>Developed backend APIs and data services supporting operational and communication datasets.</li>
                     <li>Improved database performance through schema design, indexing, and query optimization.</li>
@@ -589,7 +490,7 @@
                   </ul>
                 </li>
                 <li class="role">
-                  <div class="role__head"><h5>Junior Software Engineer</h5><span>Nov 2023 – Jan 2024</span></div>
+                  <div class="role__head"><h5>Junior Software Engineer</h5><span>Nov 2023 to Jan 2024</span></div>
                   <ul class="bullets">
                     <li>Built an internal web application, contributing to both frontend and backend components.</li>
                     <li>Developed Python and SQL utilities to extract, clean, and consolidate data for reporting and analysis.</li>
@@ -603,7 +504,7 @@
               <span class="timeline__node" aria-hidden="true"></span>
               <header class="timeline__head">
                 <h4>Freelance</h4>
-                <p class="timeline__date">Sep 2022 – Oct 2023</p>
+                <p class="timeline__date">Sep 2022 to Oct 2023</p>
               </header>
               <div class="role">
                 <div class="role__head"><h5>Machine Learning and Software Engineer</h5></div>
@@ -620,7 +521,7 @@
               <span class="timeline__node" aria-hidden="true"></span>
               <header class="timeline__head">
                 <h4>Creotech Inc</h4>
-                <p class="timeline__date">Jan 2022 – May 2022</p>
+                <p class="timeline__date">Jan 2022 to May 2022</p>
               </header>
               <div class="role">
                 <div class="role__head"><h5>Mobile Developer Intern</h5></div>
@@ -637,13 +538,13 @@
             <div class="exp-block" data-reveal>
               <h3 class="col-title">Education</h3>
               <article class="edu">
-                <p class="edu__date">Aug 2018 – Oct 2022</p>
+                <p class="edu__date">Aug 2018 to Oct 2022</p>
                 <h4>B.S. Computer Engineering</h4>
                 <p class="edu__school">Batangas State University, The National Engineering University</p>
                 <p>Coursework and projects spanning microprocessor design, HDL-based digital logic, and the foundations of electronics and computer engineering, alongside software systems, data, and applied AI.</p>
               </article>
               <article class="edu">
-                <p class="edu__date">Jun 2016 – Apr 2018</p>
+                <p class="edu__date">Jun 2016 to Apr 2018</p>
                 <h4>Senior High School, STEM Track</h4>
                 <p class="edu__school">STI College Lucena</p>
                 <p>Science, Technology, Engineering, and Mathematics track with a strong focus on math and science fundamentals.</p>
@@ -656,7 +557,7 @@
                 <li class="cert cert--highlight">
                   <span class="cert__badge cert__badge--accent" aria-hidden="true">CCA</span>
                   <div>
-                    <h4>Claude Certified Architect – Foundations</h4>
+                    <h4>Claude Certified Architect - Foundations</h4>
                     <p class="cert__date">Anthropic · September 2026</p>
                     <p>Passed Anthropic's proctored exam for designing and building production-grade applications with Claude, using Claude Code, the Claude Agent SDK, the Claude API, and MCP.</p>
                     <a class="cert__link" href="https://www.credly.com/badges/23784f5e-6542-49ef-b855-a7747b54a843" target="_blank" rel="noopener noreferrer">Verify on Credly<svg aria-hidden="true"><use href="#i-external"/></svg><span class="visually-hidden"> (opens in a new tab)</span></a>
@@ -700,7 +601,7 @@
         <div class="contact__panel" data-reveal>
           <p class="section-tag"><span>05</span>Contact</p>
           <h2 class="section-title contact__title" id="contact-title">Let's build something intelligent</h2>
-          <p class="contact__lead">I'm happy to talk about machine learning engineering, AI-powered applications, data pipelines, and edge AI, whether it's a role, a collaboration, or a hard problem you're working through.</p>
+          <p class="contact__lead">I'm happy to talk about machine learning engineering, AI-powered web and mobile apps, data pipelines, and edge AI, whether it's a role, a collaboration, or a hard problem you're working through.</p>
 
           <div class="contact__email">
             <a class="btn btn--primary btn--lg" href="mailto:maisumalague@gmail.com"><svg aria-hidden="true"><use href="#i-mail"/></svg>maisumalague<wbr>@gmail.com</a>
@@ -734,9 +635,9 @@
             <h3>Where I can help</h3>
             <ul>
               <li><strong>GenAI &amp; ML systems</strong>RAG and agentic products on Claude, OpenAI, and Gemini, plus classification and regression models with retraining and monitoring.</li>
+              <li><strong>Web &amp; mobile apps</strong>Full-stack web apps in React, TypeScript, and FastAPI or Flask, plus cross-platform mobile apps in Flutter.</li>
               <li><strong>Data pipelines &amp; analytics</strong>ETL, DAG-based orchestration, KPI and model-health dashboards.</li>
               <li><strong>Computer vision &amp; edge AI</strong>Detection pipelines and AI-enabled prototypes on Jetson, Raspberry Pi, and Arduino.</li>
-              <li><strong>Software &amp; mobile</strong>Backend APIs, internal web apps, and Flutter front ends for ML features.</li>
             </ul>
           </div>
         </div>
@@ -745,13 +646,15 @@
   </main>
 
   <!-- ============================== Footer ============================== -->
+  <div class="city-band" aria-hidden="true" data-city="band"></div>
+
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <a class="brand" href="#top" aria-label="Mairene Sumalague, back to top">
         <svg class="brand__mark" aria-hidden="true"><use href="#i-mark"/></svg>
         <span class="brand__name">Mairene Sumalague</span>
       </a>
-      <p class="site-footer__note">© <span data-year>2026</span> Mairene Sumalague. Built with HTML, CSS, and vanilla JavaScript.</p>
+      <p class="site-footer__note">© <span data-year>2026</span> Mairene Sumalague. Built with HTML, CSS, vanilla JavaScript, and three.js.</p>
       <ul class="social-row social-row--sm" aria-label="Profiles">
         <li><a class="icon-link" href="https://github.com/msumalague" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile (opens in a new tab)"><svg aria-hidden="true"><use href="#i-github"/></svg></a></li>
         <li><a class="icon-link" href="https://www.linkedin.com/in/mairene-sumalague-a81533431/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile (opens in a new tab)"><svg aria-hidden="true"><use href="#i-linkedin"/></svg></a></li>

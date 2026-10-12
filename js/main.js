@@ -269,8 +269,66 @@
       if (n === 0) btn.hidden = true;
     });
 
+    // Row packing: a wide (featured) card always starts a new row, so a wide card that
+    // lands after a partly filled row would strand empty cells. Instead, the standard
+    // cards that follow are pulled forward to finish the row first. If too few remain,
+    // that last partial row moves to the very end so only the final row can have gaps.
+    // DOM order is rewritten to match, which keeps focus order equal to visual order.
+    var perRow = 0;
+
+    function cardsPerRow() {
+      var gridStyle = getComputedStyle(grid);
+      var cols = gridStyle.gridTemplateColumns || "";
+      var repeat = cols.match(/^repeat\(\s*(\d+)/);
+      var tracks = repeat ? Number(repeat[1]) : cols.split(/\s+/).filter(Boolean).length;
+      if (!tracks || cols === "none") return 1;
+      var probe = items.filter(function (li) { return !li.classList.contains("is-featured"); })[0];
+      if (!probe) return 1;
+      var span = (getComputedStyle(probe).gridColumnStart.match(/span\s+(\d+)/) ||
+                  getComputedStyle(probe).gridColumnEnd.match(/span\s+(\d+)/) || [])[1];
+      // No span means explicit lines such as "1 / -1": one card per row.
+      return span ? Math.max(1, Math.round(tracks / Number(span))) : 1;
+    }
+
+    function packOrder(visible, n) {
+      if (n <= 1) return visible.slice();
+      var out = [], waiting = [], fill = 0;
+      visible.forEach(function (li) {
+        if (li.classList.contains("is-featured")) {
+          if (fill === 0) out.push(li); else waiting.push(li);
+          return;
+        }
+        out.push(li);
+        fill = (fill + 1) % n;
+        if (fill === 0 && waiting.length) { out = out.concat(waiting); waiting = []; }
+      });
+      if (waiting.length) out = out.slice(0, out.length - fill).concat(waiting, out.slice(out.length - fill));
+      return out;
+    }
+
+    function placeCards(order) {
+      var all = order.concat(items.filter(function (li) { return order.indexOf(li) === -1; }));
+      var active = document.activeElement;
+      var keepFocus = active && active !== document.body && grid.contains(active) ? active : null;
+      all.forEach(function (li, i) {
+        var at = grid.children[i] || null;
+        if (at === li) return;
+        // moveBefore keeps state such as focus and running animations where supported.
+        if (typeof grid.moveBefore === "function") {
+          try { grid.moveBefore(li, at); return; } catch (err) { /* fall through */ }
+        }
+        grid.insertBefore(li, at);
+      });
+      if (keepFocus && document.activeElement !== keepFocus) keepFocus.focus({ preventScroll: true });
+    }
+
+    function visibleItems() {
+      return items.filter(function (li) { return !li.hidden; });
+    }
+
     function apply(key, initial) {
       var shown = 0;
+      var entering = [];
       items.forEach(function (li) {
         var match = key === "all" || li.getAttribute("data-categories").split(" ").indexOf(key) !== -1;
         var wasHidden = li.hidden;
@@ -278,13 +336,17 @@
         if (match) {
           shown++;
           if (!initial) li.classList.add("is-in");
-          if (wasHidden && !document.startViewTransition && !reduceMotion) {
-            li.classList.remove("is-entering");
-            void li.offsetWidth;
-            li.style.setProperty("--enter-delay", (shown - 1) * 0.05 + "s");
-            li.classList.add("is-entering");
-          }
+          if (wasHidden && !document.startViewTransition && !reduceMotion) entering.push(li);
         }
+      });
+      perRow = cardsPerRow();
+      var order = packOrder(visibleItems(), perRow);
+      placeCards(order);
+      entering.forEach(function (li) {
+        li.classList.remove("is-entering");
+        void li.offsetWidth;
+        li.style.setProperty("--enter-delay", order.indexOf(li) * 0.05 + "s");
+        li.classList.add("is-entering");
       });
       if (countEl) {
         countEl.textContent = key === "all"
@@ -303,6 +365,18 @@
       });
     });
     apply("all", true);
+
+    // Re-pack only when the number of cards per row actually changes.
+    var resizeTimer = 0;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        var n = cardsPerRow();
+        if (n === perRow) return;
+        perRow = n;
+        placeCards(packOrder(visibleItems(), n));
+      }, 150);
+    }, { passive: true });
 
     grid.addEventListener("click", function (e) {
       var trigger = e.target.closest("[data-open-project]");
@@ -525,8 +599,10 @@
 
     function setNoticing() { root.classList.toggle("is-noticing", near || hovering); }
 
+    function is3d() { return root.classList.contains("has-3d"); }
+
     function track(e) {
-      if (!head) return;
+      if (!head || is3d()) return;
       var hb = head.getBoundingClientRect();
       var hx = hb.left + hb.width / 2;
       var hy = hb.top + hb.height * 0.6;
@@ -546,6 +622,7 @@
     }
 
     function step() {
+      if (is3d()) return;
       pupils.forEach(function (p) {
         p.x += (p.tx - p.x) * 0.2;
         p.y += (p.ty - p.y) * 0.2;
@@ -561,12 +638,13 @@
     }
 
     function pet() {
+      if (is3d()) return;
       var now = Date.now();
       pets = now - lastPet < 4000 ? pets + 1 : 1;
       lastPet = now;
       root.classList.add("is-purring", "was-petted");
       if (label) label.textContent = moods[Math.min(pets, moods.length) - 1];
-      if (status) status.textContent = pets === 1 ? "The robot cat purrs." : "The robot cat purrs happily (" + pets + " pets).";
+      if (status) status.textContent = pets === 1 ? "Kopicat purrs." : "Kopicat purrs happily (" + pets + " pets).";
       clearTimeout(purrTimer);
       purrTimer = setTimeout(function () {
         root.classList.remove("is-purring");
@@ -584,6 +662,23 @@
     return { track: track, step: step, reset: reset };
   }
 
+  /* ---------------------------------------------------------------- neon city */
+  var cities = [];
+  function mountCity(el, mode) {
+    if (!el || !window.NeonCity) return null;
+    try {
+      var c = window.NeonCity.mount(el, { mode: mode, motion: motionAllowed() });
+      if (c) cities.push(c);
+      return c;
+    } catch (err) {
+      if (window.console) console.error(err);
+      return null;
+    }
+  }
+  function initCityBand() {
+    mountCity($("[data-city=band]"), "band");
+  }
+
   /* ---------------------------------------------------------------- hero scene */
   function initScene() {
     var hero = $("#top");
@@ -593,6 +688,7 @@
       return { el: el, depth: parseFloat(el.getAttribute("data-depth")) || 0 };
     });
     var cat = initCat();
+    var city = mountCity($("[data-city=hero]", hero), "hero");
     var canvas = $("[data-particles]", sceneEl);
     var ctx = canvas && canvas.getContext ? canvas.getContext("2d") : null;
 
@@ -685,6 +781,7 @@
       pointer.x += (pointer.tx - pointer.x) * 0.06;
       pointer.y += (pointer.ty - pointer.y) * 0.06;
       applyLayers();
+      if (city && city.setPointer) city.setPointer(pointer.x, pointer.y);
       if (cat) cat.step();
       if (!document.hidden) drawParticles(dt);
       rafId = requestAnimationFrame(frame);
@@ -743,6 +840,7 @@
     var allowed = motionAllowed();
     doc.classList.toggle("motion-paused", userPausedMotion);
     if (scene) scene.setMotion(allowed);
+    cities.forEach(function (c) { c.setMotion(allowed); });
     if (!allowed) revealAll();
     var btn = $("[data-motion-toggle]");
     if (btn) {
@@ -790,6 +888,7 @@
   run(initTimeline);
   run(initLifecycle);
   scene = run(initScene);
+  run(initCityBand);
   run(applyMotionState);
   run(initYear);
 })();

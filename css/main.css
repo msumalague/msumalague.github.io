@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Mairene Sumalague — portfolio
+   Mairene Sumalague, portfolio
    Theme: a machine ecosystem at dawn. Deep forest + charcoal, luminous
    cyan as the "machine" signal, warm amber as the "life" signal.
    ========================================================================== */
@@ -252,16 +252,6 @@ body::before {
     radial-gradient(ellipse 70% 55% at 70% 70%, rgba(183, 148, 255, 0.08), transparent 70%),
     linear-gradient(180deg, #040308 0%, #0b0814 40%, #171029 68%, #150f26 82%, #0b0814 100%);
 }
-.scene__sun {
-  width: 34rem; height: 34rem; left: 74%; top: 72%; translate: -50% -50%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 214, 150, 0.22) 0%, rgba(244, 184, 96, 0.08) 35%, transparent 65%);
-  filter: blur(4px);
-}
-.scene__layer { left: -4%; width: 108%; max-width: none; object-fit: cover; object-position: 50% 100%; }
-.scene__layer--far { bottom: 16%; height: 42%; opacity: 0.9; }
-.scene__layer--mid { bottom: 5%; height: 36%; }
-.scene__layer--near { bottom: -3%; height: 30%; }
 
 .scene__fog {
   left: -20%; width: 140%; height: 38%;
@@ -289,29 +279,24 @@ body::before {
     linear-gradient(180deg, rgba(5, 4, 9, 0.6) 0%, transparent 22%, transparent 78%, var(--c-bg) 100%);
 }
 
-.scene__bird { width: 4.5rem; top: 24%; right: -6rem; opacity: 0.85; animation: birdFly 54s linear infinite; animation-delay: 4s; }
-.bird__wing { transform-box: fill-box; animation: flap 2.6s ease-in-out infinite; }
-.bird__wing--far { transform-origin: 50% 100%; }
-.bird__wing--near { transform-origin: 30% 0%; }
-@keyframes birdFly {
-  0% { transform: translate(0, 0); }
-  50% { transform: translate(-60vw, -3vh); }
-  100% { transform: translate(-125vw, 2vh); }
-}
-@keyframes flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.72); } }
 
 /* Robotic cat: interactive, sits above the scene and below the copy */
+/* Layout anchor for the sitting 3D cat (js/cat3d.js). The cat's paws rest at its bottom center. */
 .creature {
   position: absolute; z-index: 1;
-  right: clamp(-8rem, -6vw, 0rem); bottom: 1rem;
-  /* Sized so the creature's head and detection label always clear the portrait above it. */
-  width: clamp(24rem, min(54vw, 131vh - 21rem), 60rem);
-  width: clamp(24rem, min(54vw, 131svh - 21rem), 60rem);
-  aspect-ratio: 820 / 440;
+  right: clamp(1rem, 5vw, 6rem); bottom: clamp(0.75rem, 2.5vh, 2rem);
+  width: clamp(15rem, min(24vw, 44vh), 27rem);
+  width: clamp(15rem, min(24vw, 44svh), 27rem);
+  aspect-ratio: 0.9;
   pointer-events: none;
   will-change: translate;
 }
-.cat { display: block; width: 100%; height: auto; max-width: none; overflow: visible; }
+/* 2D fallback (no WebGL): the lying cat sits along the bottom of the anchor. */
+.cat { position: absolute; right: -10%; bottom: 0; display: block; width: 190%; height: auto; max-width: none; overflow: visible; }
+
+/* Neon city backdrop (js/city.js) */
+.hero__scene > .scene__city { inset: 0; }
+.city-band { position: relative; height: clamp(170px, 17vw, 270px); margin-top: clamp(-6rem, -6vw, -3rem); pointer-events: none; }
 
 .cat__head, .cat__wire-head { transform-box: view-box; transform-origin: 232px 286px; transform: rotate(var(--head-rot, 0deg)); transition: transform 0.6s var(--ease-out); }
 .cat__ear { transform-box: view-box; transition: transform 0.35s var(--ease-out); }
@@ -482,7 +467,7 @@ body::before {
 
 /* Mid-size desktops: slide the creature right (cropping its tail) so the facts strip never covers it. */
 @media (min-width: 56.0625em) and (max-width: 72em) {
-  .creature { right: -16vw; }
+  .creature { right: 1rem; }
 }
 
 /* Short laptop screens: tighten the hero so the scene stays in the first view. */
@@ -523,7 +508,7 @@ body::before {
 .motion-toggle svg { width: 0.9rem; height: 0.9rem; }
 .motion-toggle__play, .motion-toggle.is-paused .motion-toggle__pause { display: none; }
 .motion-toggle.is-paused .motion-toggle__play { display: block; color: var(--c-accent); }
-.motion-paused :is(.scene__fog, .scene__bird, .bird__wing, .cat__ear, .cat__eye, .cat__tail, .cat__conduit, .cat__core, .cat__glow, .cat__beam, .cat__scanline, .cat__detect, .ring, .portrait-hud__scan),
+.motion-paused :is(.scene__fog, .cat__ear, .cat__eye, .cat__tail, .cat__conduit, .cat__core, .cat__glow, .cat__beam, .cat__scanline, .cat__detect, .ring, .portrait-hud__scan),
 .motion-paused .status-dot::after, .motion-paused .scroll-cue__line::after, .motion-paused .lifecycle__track::after {
   animation-play-state: paused !important;
 }
@@ -613,6 +598,81 @@ body::before {
 
 .about__actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-top: 2.5rem; }
 
+/* ---------- About: what I build (capability trio) ---------- */
+.build { margin-bottom: clamp(3.5rem, 7vw, 6rem); }
+.build__label {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+  font-family: var(--f-mono); font-size: var(--step--1); letter-spacing: 0.16em; text-transform: uppercase; color: var(--c-text-3);
+}
+.build__label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--c-line-2), transparent); }
+.build__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.5rem); }
+.build__item { display: flex; min-width: 0; }
+.build-card {
+  --b-c: #b794ff; --b-rgb: 183, 148, 255;
+  position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 0.95rem; width: 100%; min-width: 0;
+  padding: clamp(1.35rem, 2.4vw, 2rem);
+  background:
+    radial-gradient(120% 70% at 0% 0%, rgba(var(--b-rgb), 0.11), transparent 62%),
+    linear-gradient(180deg, var(--c-surface-2), var(--c-bg-2));
+  border: 1px solid var(--c-line);
+  transition: border-color 0.35s, box-shadow 0.45s, transform 0.45s var(--ease-out);
+}
+.build-card--web { --b-c: #36e2ff; --b-rgb: 54, 226, 255; }
+.build-card--mobile { --b-c: #ff4fd8; --b-rgb: 255, 79, 216; }
+.build-card::before {
+  content: ""; position: absolute; top: -1px; left: -1px; width: 2.6rem; height: 2.6rem; pointer-events: none;
+  border-top: 2px solid var(--b-c); border-left: 2px solid var(--b-c);
+  filter: drop-shadow(0 0 6px rgba(var(--b-rgb), 0.6));
+}
+.build-card::after {
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--b-rgb), 0.85), transparent);
+  opacity: 0.45; transition: opacity 0.4s, left 0.5s var(--ease-out), right 0.5s var(--ease-out);
+}
+.build-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.build-card__icon {
+  display: grid; place-items: center; width: 3.25rem; height: 3.25rem; flex: none; color: var(--b-c);
+  background: rgba(var(--b-rgb), 0.08); border: 1px solid rgba(var(--b-rgb), 0.32);
+  box-shadow: inset 0 0 18px -6px rgba(var(--b-rgb), 0.5);
+}
+.build-card__icon svg { width: 1.75rem; height: 1.75rem; filter: drop-shadow(0 0 6px rgba(var(--b-rgb), 0.55)); transition: transform 0.5s var(--ease-out); }
+.build-card__index { font-family: var(--f-mono); font-size: var(--step--2); letter-spacing: 0.14em; color: var(--c-text-3); }
+.build-card__index::before { content: "/ "; color: var(--b-c); }
+.build-card__title { font-size: var(--step-2); margin-top: 0.2rem; }
+.build-card__text { font-size: var(--step--1); color: var(--c-text-2); line-height: 1.6; }
+.build-card .tags li { color: var(--c-text); border-color: rgba(var(--b-rgb), 0.22); background: rgba(var(--b-rgb), 0.06); }
+.build-card__proof {
+  margin-top: auto; padding-top: 0.95rem; border-top: 1px solid var(--c-line);
+  font-family: var(--f-mono); font-size: var(--step--2); line-height: 1.6; color: var(--c-text-3);
+}
+.build-card__proof span { display: block; margin-bottom: 0.15rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--b-c); }
+@media (hover: hover) {
+  .build-card:hover {
+    transform: translateY(-3px); border-color: rgba(var(--b-rgb), 0.45);
+    box-shadow: 0 24px 50px -26px rgba(0, 0, 0, 0.85), 0 0 42px -20px rgba(var(--b-rgb), 0.6);
+  }
+  .build-card:hover::after { opacity: 1; left: 0; right: 0; }
+  .build-card:hover .build-card__icon svg { transform: translateY(-2px) scale(1.06); }
+}
+@media (max-width: 56em) {
+  .build__grid { grid-template-columns: minmax(0, 1fr); }
+  .build-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.8rem 1.25rem; align-items: start; }
+  .build-card__top { grid-row: 1 / span 4; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .build-card > :not(.build-card__top) { grid-column: 2; }
+  .build-card__title { margin-top: 0; }
+  .build-card__proof { margin-top: 0.15rem; }
+}
+@media (max-width: 30em) {
+  .build-card { display: flex; align-items: stretch; }
+  .build-card__top { flex-direction: row; align-items: flex-start; }
+  .build-card__icon { width: 2.9rem; height: 2.9rem; }
+  .build-card__icon svg { width: 1.55rem; height: 1.55rem; }
+}
+@media print {
+  .build-card { break-inside: avoid; }
+  .build-card::before, .build-card::after { display: none; }
+}
+
 /* ---------- Projects ---------- */
 .filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
 .filters__group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -681,7 +741,7 @@ body::before {
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 
-/* theme: vision — scanning line + reticle */
+/* theme: vision, scanning line + reticle */
 .hud-scan { position: absolute; left: 0; right: 0; top: 0; height: 30%; opacity: 0;
   background: linear-gradient(180deg, transparent, rgba(183, 148, 255, 0.16) 85%, rgba(183, 148, 255, 0.9) 100%);
   border-bottom: 1px solid var(--c-accent); }
@@ -926,6 +986,8 @@ body.dialog-open { overflow: hidden; }
 .contact__help ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 2.5rem; }
 .contact__help li { display: grid; gap: 0.35rem; padding-left: 1.1rem; border-left: 2px solid var(--c-line-2); color: var(--c-text-3); font-size: var(--step--1); }
 .contact__help li strong { font-family: var(--f-display); font-size: var(--step-1); font-weight: 600; color: var(--c-text); }
+/* Keep each item's title and text together when the item beside it in the row is taller. */
+.contact__help li { align-content: start; }
 
 /* ---------- Footer ---------- */
 .site-footer { border-top: 1px solid var(--c-line); padding-block: 2rem; background: var(--c-bg); }
@@ -944,17 +1006,14 @@ body.dialog-open { overflow: hidden; }
 }
 
 @media (max-width: 56em) {
-  .hero__inner { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; padding-block: 1.5rem max(17rem, 48vw); }
+  .hero__inner { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; padding-block: 1.5rem max(23rem, 80vw); }
   .hero__title { font-size: var(--step-hero); }
   .hero__portrait { order: -1; justify-self: start; grid-auto-flow: column; align-items: center; gap: 1.25rem; }
   .hud-tag { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
   .hud-tag span + span { padding-left: 0; border-left: 0; }
-  .creature { width: max(34rem, 110vw); left: -5vw; right: auto; bottom: 0; }
+  .creature { width: min(64vw, 19rem); left: calc(50% - min(32vw, 9.5rem)); right: auto; bottom: 0.5rem; }
   .scene__vignette { background: linear-gradient(180deg, rgba(5, 4, 9, 0.86) 0%, rgba(5, 4, 9, 0.6) 55%, transparent 75%, var(--c-bg) 100%); }
-  .scene__layer--far { bottom: 22%; height: 30%; }
-  .scene__layer--mid { bottom: 8%; height: 26%; }
-  .scene__layer--near { height: 20%; }
-  .section-head--split { grid-template-columns: minmax(0, 1fr); }
+        .section-head--split { grid-template-columns: minmax(0, 1fr); }
   .section-intro { justify-self: start; }
   .about__grid { grid-template-columns: minmax(0, 1fr); }
   .about__portrait { position: relative; top: 0; max-width: 24rem; }
@@ -1009,7 +1068,7 @@ body.dialog-open { overflow: hidden; }
   .creature__hint { animation: none !important; opacity: 1; }
   .creature.was-petted .creature__hint { opacity: 0; }
   .creature.is-purring .cat__purr circle:first-child { animation: none !important; opacity: 0.6; transform: scale(1.8); }
-  .cat__beam, .cat__scanline, .portrait-hud__scan, .scene__bird, .lifecycle__track::after, .project-card::before { display: none; }
+  .cat__beam, .cat__scanline, .portrait-hud__scan, .lifecycle__track::after, .project-card::before { display: none; }
   .cat__head, .cat__wire-head { transition: none; }
   .motion-toggle { display: none; }
 }

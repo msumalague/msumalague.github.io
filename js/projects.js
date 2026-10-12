@@ -6,7 +6,7 @@
  *   title       project name
  *   tagline     one line, shown under the title
  *   context     short provenance line, e.g. "Personal project · 2022"
- *   categories  any of: ml, genai, cv, robotics, data, software (drive the filters)
+ *   categories  any of: ml, genai, cv, robotics, data, software (drive the filters; software = Web & Mobile)
  *   theme       card visual treatment: agent | vision | neural | robotics | data | product
  *   featured    true to render as a wide card
  *   summary     2-3 sentences for the card
@@ -23,8 +23,8 @@
  */
 window.PORTFOLIO_PROJECTS = [
   {
-    id: "geo-studio",
-    title: "GEO Studio",
+    id: "content-engine",
+    title: "Voice-of-Customer Content Engine",
     tagline: "GenAI content-intelligence platform: sales calls in, grounded and PII-safe content out",
     context: "Client work · 2026 · Primary engineer",
     categories: ["genai", "ml", "data", "software"],
@@ -35,7 +35,7 @@ window.PORTFOLIO_PROJECTS = [
     problem:
       "The marketing team had a large backlog of sales-call transcripts full of real customer questions, but no safe, repeatable way to turn them into on-brand content without leaking customer details, duplicating existing pages, or making unsupported product claims. They also had no view of how search engines and AI answer engines described the product.",
     built: [
-      "Primary engineer from the first commit, and the sole developer for the first three months; a teammate joined for later phases.",
+      "Primary engineer from the first commit and sole developer for the first three months, with a teammate joining for later phases.",
       "Async FastAPI service plus a queue worker with Postgres SKIP LOCKED claims, lease recovery, and advisory-locked scheduled jobs.",
       "Transcript pipeline: parsing, PII redaction, an LLM sensitivity classifier, insight extraction, sentence-aware chunking, and embeddings in pgvector.",
       "Retrieval-augmented opportunity discovery with a side-effect-free decision gate that blocks, reframes, or surfaces each topic based on evidence, claim risk, and duplication.",
@@ -46,9 +46,9 @@ window.PORTFOLIO_PROJECTS = [
       "AI-assisted engineering workflow: a CLAUDE.md operating manual and custom Claude Code skills for verification and QA reports.",
     ],
     stack: ["Claude (Bedrock + API)", "RAG · pgvector", "FastAPI", "PostgreSQL", "React", "TypeScript", "Gemini embeddings", "AWS", "Playwright", "pytest", "Sentry", "Claude Code"],
-    image: { svg: "images/projects/geo-studio.svg", alt: "Illustration: sales-call transcripts pass through PII redaction into an embedding space, then a decision gate, producing a grounded draft with QA, plus AI answer-engine visibility panels" },
+    image: { svg: "images/projects/content-engine.svg", alt: "Illustration: sales-call transcripts pass through PII redaction into an embedding space, then a decision gate, producing a grounded draft with QA, plus AI answer-engine visibility panels" },
     gallery: [
-      { svg: "images/projects/geo-studio.svg", alt: "Illustration of the GEO Studio pipeline from transcripts to grounded drafts", caption: "Original illustration. The product's interface and the client's data are confidential." },
+      { svg: "images/projects/content-engine.svg", alt: "Illustration of the Voice-of-Customer Content Engine pipeline from transcripts to grounded drafts", caption: "Original illustration. The product's interface and the client's data are confidential." },
     ],
     privateNote: "Client work, private repository",
   },
@@ -68,7 +68,7 @@ window.PORTFOLIO_PROJECTS = [
       "Config-driven intake normalised to one schema, buy-box filters, and a weighted priority score that records missing inputs as data gaps instead of guessing.",
       "Parcel narrowing with county ArcGIS REST radius queries, haversine ranking, and polygon-centroid geometry.",
       "A multimodal prompt that pairs listing photos with labelled aerial tiles and returns strict JSON.",
-      "Confidence gate: a match is confirmed only above a configured threshold with two or more independent visual signals; everything else goes to a human review queue.",
+      "Confidence gate: a match is confirmed only above a configured threshold with two or more independent visual signals, and everything else goes to a human review queue.",
       "Swappable vision provider (Claude Haiku or Gemini) with a test-enforced model pin, retries with backoff, and per-call cost logging against a monthly cap.",
       "Weekly orchestration with deduplication, spreadsheet and CRM outputs, crash and hang alerting, and a guard test that fails the build if any automated outreach code appears. 187 tests in total.",
     ],
@@ -82,9 +82,9 @@ window.PORTFOLIO_PROJECTS = [
   {
     id: "dental-tryon",
     title: "Dental Ornament Virtual Try-On",
-    tagline: "Computer vision places a tooth gem; generative AI makes it look real",
+    tagline: "Computer vision places a tooth gem, and generative AI makes it look real",
     context: "Client prototype · 2025",
-    categories: ["genai", "cv"],
+    categories: ["genai", "cv", "software"],
     theme: "vision",
     summary:
       "An interactive try-on app that detects the teeth in a smile photo, places a chosen ornament on a selected tooth, and uses generative image editing to make it look realistic. It compares prompt-only generation with a detection-guided composite plus an enhancement step, using switchable Gemini and OpenAI image models.",
@@ -110,7 +110,7 @@ window.PORTFOLIO_PROJECTS = [
     title: "Customer Feedback Triage: LLM vs. ML",
     tagline: "Schema-constrained LLM classification benchmarked against a TF-IDF baseline",
     context: "Client demo · 2026",
-    categories: ["genai", "ml"],
+    categories: ["genai", "ml", "software"],
     theme: "neural",
     summary:
       "An analytics app for a health-and-wellness retail client that labels free-text customer feedback by category, urgency, and sentiment. A schema-constrained LLM classifier runs side by side with a classical ML baseline, both are scored on precision and recall, and the app generates summaries by region and store.",
@@ -136,11 +136,11 @@ window.PORTFOLIO_PROJECTS = [
     title: "Crypto Regime Forecasting & Autonomous Trading",
     tagline: "Multi-horizon ML early-warning scores, turned into risk-guarded trades",
     context: "Client models + internal R&D · 2026",
-    categories: ["ml", "data", "software"],
+    categories: ["ml", "data"],
     theme: "neural",
     featured: true,
     summary:
-      "A daily ML pipeline that turns public market, sentiment, and derivatives data into 0–100 upturn and downturn scores across nine forecast horizons, plus an internal trading system that acts on those scores unattended, behind layered risk controls.",
+      "A daily ML pipeline that turns public market, sentiment, and derivatives data into 0 to 100 upturn and downturn scores across nine forecast horizons, plus an internal trading system that acts on those scores unattended, behind layered risk controls.",
     problem:
       "A crypto investment client needed an early, explainable warning of altcoin drawdowns and rallies, delivered as a simple daily signal. Acting on model scores safely takes more than the scores: it needs guards against bad signals, partial fills, whipsaws, and runaway orders.",
     built: [
@@ -216,7 +216,7 @@ window.PORTFOLIO_PROJECTS = [
     id: "property-ops",
     title: "Property Operations Platform",
     tagline: "Onboarding tracker and scheduled integrations for a vacation-rental operator",
-    context: "Client work · 2025–2026",
+    context: "Client work · 2025 to 2026",
     categories: ["software", "data"],
     theme: "product",
     summary:
@@ -228,7 +228,7 @@ window.PORTFOLIO_PROJECTS = [
       "Layered Flask app (web, services, repositories, integrations) with a framework-free domain model, HTMX partial updates, and a token-based design system with dark mode.",
       "Hardened auth and request security: allow-listed sign-in, scrypt hashing, signed cookies, same-origin checks, and a nonce-based CSP.",
       "Fault-tolerant integrations (work-management GraphQL, Slack, SMTP) and per-property PDF auto-fill attached to owner emails.",
-      "CI with linting, security lint rules, and SQL tests against a disposable Postgres; WCAG contrast tests and a Playwright sweep of every page across 7 viewports and both themes; about 250 tests.",
+      "CI with linting, security lint rules, and SQL tests against a disposable Postgres, plus WCAG contrast tests and a Playwright sweep of every page across 7 viewports and both themes. About 250 tests in total.",
       "Scheduled jobs: reservation and review sync into GraphQL boards, rating-trend snapshots, monthly maintenance PDFs filed to Google Drive, weekly occupancy workbooks, Gmail digests, and hash-based deploy-drift detection.",
     ],
     stack: ["Flask", "HTMX", "PostgreSQL", "GitHub Actions", "Playwright", "Docker", "GraphQL", "Gmail API", "n8n"],
@@ -359,7 +359,7 @@ window.PORTFOLIO_PROJECTS = [
       { label: "App source", url: "https://github.com/msumalague/ThyroCare-Application", type: "github" },
       { label: "Team ML notebooks", url: "https://github.com/msumalague/ThyroCare-Supervised-Machine-Learning-Model", type: "github" },
     ],
-    note: "The team's modeling work (missing-value handling, label encoding, and a comparison of Random Forest, Gradient Boosting, HistGradientBoosting, AdaBoost, and XGBoost plus a soft-voting ensemble on a class-balanced synthetic dataset) is published in the companion ML notebooks repository. The Heroku backend has since been retired, so there is no live demo; the app repository README includes screenshots and a demo video.",
+    note: "The team's modeling work (missing-value handling, label encoding, and a comparison of Random Forest, Gradient Boosting, HistGradientBoosting, AdaBoost, and XGBoost plus a soft-voting ensemble on a class-balanced synthetic dataset) is published in the companion ML notebooks repository. The Heroku backend has since been retired, so there is no live demo, but the app repository README includes screenshots and a demo video.",
   },
   {
     id: "iot-device-identification",
@@ -418,5 +418,5 @@ window.PORTFOLIO_FILTERS = {
   cv: "Computer Vision",
   robotics: "Robotics & Edge AI",
   data: "Data",
-  software: "Software & Mobile",
+  software: "Web & Mobile",
 };
