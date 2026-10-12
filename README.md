@@ -3,7 +3,7 @@
 Personal portfolio of **Mairene Sumalague**, AI/ML Engineer and Software Engineer.
 Live at <https://msumalague.github.io/>.
 
-A static site with no build step: plain HTML, CSS, and vanilla JavaScript, plus a self-hosted copy of three.js for the 3D cat, served by GitHub Pages from the `main` branch.
+A static site with no build step: plain HTML, CSS, and vanilla JavaScript, plus a self-hosted copy of three.js for the 3D hologram cat, served by GitHub Pages from the `main` branch.
 
 ## Structure
 
@@ -13,9 +13,11 @@ css/main.css            all styles; design tokens live at the top in :root
 js/projects.js          project data: edit this to add or change projects
 js/main.js              navigation, scroll reveals, project cards/filters/dialog, hero scene
 js/city.js              procedural neon city (hero backdrop and footer skyline band)
-js/cat3d.js             interactive 3D robot cat (three.js), with a synthesized purr
+js/cat3d.js             Kopicat as an interactive 3D hologram on a projector base (three.js), with a synthesized purr
 js/fx.js                animations and neon accents below the hero
-vendor/three/           self-hosted three.js r160 (MIT license)
+models/                 kopicat-holo.glb, the hologram model (optimized from a CC BY 4.0 model, see Credits)
+vendor/three/           self-hosted three.js r160 and the addons it uses (MIT license)
+images/cat/             static Kopicat image, shown when WebGL is off
 images/profile/         profile photo (original + optimized 320/640 px WebP and JPG)
 images/projects/        optimized project images (card crops + full size) and original SVG illustrations
 images/portfolio/       original project screenshots (source files for images/projects/)
@@ -49,5 +51,10 @@ Then open <http://localhost:8765/>.
 
 - Motion respects `prefers-reduced-motion` and the on-page "Pause motion" control, and animations pause while they are off-screen.
 - Fonts load from Google Fonts (Chakra Petch, Inter, JetBrains Mono, Dela Gothic One, DotGothic16). Everything else is self-hosted.
-- The hero artwork, its interactive creature, and the HUD elements are original artwork made for this site.
+- The hero artwork and the HUD elements are original artwork made for this site. Kopicat is the owner's own cat.
 - Client projects are anonymized. Their cards use original illustrations instead of real interfaces or data.
+
+## Credits
+
+- Kopicat's hologram is adapted from [“Siamese In Motion”](https://skfb.ly/pKuUt) by [restore50](https://sketchfab.com/restore50), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes: the mesh was simplified and compressed for the web, rescaled and reoriented, rendered as a hologram, given cyborg accents (collar, chest core, joint rings, head modules, a tail crystal), and animated procedurally.
+- [three.js](https://threejs.org/) and the [meshoptimizer](https://github.com/zeux/meshoptimizer) decoder are MIT licensed.

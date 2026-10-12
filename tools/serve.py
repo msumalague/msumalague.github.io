@@ -23,7 +23,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class Server(http.server.ThreadingHTTPServer):
+    # The default backlog of 5 refuses some of a browser's parallel requests on Windows.
+    request_queue_size = 128
+    daemon_threads = True
+
+
 if __name__ == "__main__":
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 8765), functools.partial(Handler, directory=ROOT))
+    server = Server(("127.0.0.1", 8765), functools.partial(Handler, directory=ROOT))
     print("Serving", ROOT, "on http://127.0.0.1:8765/", flush=True)
     server.serve_forever()

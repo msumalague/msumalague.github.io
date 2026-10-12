@@ -1,11 +1,11 @@
 /* ==========================================================================
-   Kopicat, the owner's cyborg cat (js/cat3d.js). Load after css/main.css.
+   Kopicat, the owner's cat, as a 3D hologram (js/cat3d.js). Load after css/main.css.
    The static image (.cat-img) is the fallback. When WebGL starts, the module
-   adds .has-3d to .creature and the living image fades in over it.
+   adds .has-3d to .creature and the hologram fades in over it.
    ========================================================================== */
 
-/* Layout anchor: exactly the standing cat image box (644 x 732, its paws on the bottom edge).
-   The sitting and front poses are placed against the same ground line by the module. */
+/* Layout anchor: the static cat image box (644 x 732, his paws on the bottom edge).
+   The module sizes the hologram from its height and rests the front rim of the base on its bottom edge. */
 .creature[data-creature] {
   right: clamp(1.5rem, 7vw, 8rem);
   bottom: clamp(0.5rem, 2vh, 1.5rem);
@@ -51,8 +51,8 @@
   transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
 
-/* Render surface: larger than the anchor so tilt, the hop, glow, sparks and the wide sitting pose
-   never clip. It never takes pointer input (the module hit-tests the cat's own pixels). */
+/* Render surface: larger than the anchor so the base, the turning cat, the hop and the glow never
+   clip. It never takes pointer input (the module ray casts against the cat and the base). */
 .creature__stage {
   position: absolute;
   left: -50%; right: -50%; top: -26%; bottom: -16%;
@@ -85,14 +85,14 @@
 }
 .kopi-heart svg { display: block; width: 100%; height: 100%; fill: currentColor; }
 
-/* Keyboard access: the pet button stays focusable and draws its ring around the cat. */
+/* Keyboard access: the pet button stays focusable and draws its ring around the hologram and its base. */
 .creature.has-3d .creature__pet {
   position: absolute;
-  left: 2%; right: 2%; top: 0; bottom: 2%;
+  left: -14%; right: -14%; top: 4%; bottom: -3%;
   width: auto; height: auto;
   padding: 0; margin: 0;
   background: none; border: 0; opacity: 1;
-  border-radius: 44% 44% 10% 10% / 34% 34% 8% 8%;
+  border-radius: 46% 46% 50% 50% / 40% 40% 24% 24%;
   pointer-events: none;
   z-index: 2;
 }
@@ -103,10 +103,9 @@
   box-shadow: 0 0 0 10px rgba(183, 148, 255, 0.08), 0 0 28px rgba(183, 148, 255, 0.22);
 }
 
-/* "pet me" hint, placed by the module beside the chest */
+/* "pet me" hint, placed by the module beside the base */
 .creature.has-3d .creature__hint { left: 0; top: 0; z-index: 2; will-change: transform; }
-.creature.was-petted .creature__hint,
-.creature.is-sitting .creature__hint { animation: none; opacity: 0; transition: opacity 0.3s; }
+.creature.was-petted .creature__hint { animation: none; opacity: 0; transition: opacity 0.3s; }
 
 /* HUD above the head (positioned by JS): detection tag plus the purr mute button. */
 .cat3d-hud {
@@ -151,7 +150,7 @@
 }
 .cat3d-tag.is-mood::before { background: #b794ff; box-shadow: 0 0 8px #b794ff; }
 
-/* A pose change re-materializes the cat: the tag flickers with a short chromatic split. */
+/* When the projection glitches (a pet, or now and then on its own) the tag flickers with a short chromatic split. */
 .cat3d-hud.is-glitch .cat3d-tag { animation: kopiGlitch 0.56s steps(1, end) both; }
 @keyframes kopiGlitch {
   0% { text-shadow: 2px 0 rgba(255, 70, 200, 0.85), -2px 0 rgba(80, 200, 255, 0.85); transform: translateX(1px); }
@@ -206,7 +205,7 @@ html.cat3d-grabbing, html.cat3d-grabbing * {
   -webkit-user-select: none; user-select: none;
 }
 
-/* Small screens: the cat stands bottom center, below the hero copy and above the hero controls. */
+/* Small screens: the hologram stands bottom center, below the hero copy and above the hero controls. */
 @media (max-width: 56em) {
   .creature[data-creature] {
     width: min(56vw, 15rem);

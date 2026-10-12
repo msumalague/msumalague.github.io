@@ -993,6 +993,9 @@ body.dialog-open { overflow: hidden; }
 .site-footer { border-top: 1px solid var(--c-line); padding-block: 2rem; background: var(--c-bg); }
 .site-footer__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; }
 .site-footer__note { font-size: var(--step--1); color: var(--c-text-3); }
+.site-footer__credit { display: block; margin-top: 0.3rem; }
+.site-footer__credit a { text-decoration: underline; text-decoration-color: rgba(183, 148, 255, 0.45); }
+.site-footer__credit a:hover { color: var(--c-text); text-decoration-color: currentColor; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 64em) {

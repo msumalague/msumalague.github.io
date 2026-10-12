@@ -1,102 +1,66 @@
 /*
- * Kopicat: the owner's own cat, restyled as a cyborg, brought to life (three.js r160).
+ * Kopicat, the owner's cat, as a 3D hologram (three.js r160).
  *
- * The cat is the owner's artwork itself, cut out in three poses (images/cat/kopi-*.webp):
- * STAND (default), FRONT (turned toward the visitor) and SIT. Each pose is drawn on a finely
- * subdivided plane displaced by a depth map, so it tilts in real 3D toward the pointer. Per-vertex
- * weights computed from landmarks animate it in the vertex shader: breathing, a head that follows the
- * pointer, ear twitches and a tail that sways along its own bone chain (the crystal blade stays rigid).
- * The fragment shader moves the blue eyes toward the pointer, blends real painted eyelid frames for
- * blinks and the happy squint (kopi-*-lids.webp), and makes the blue armor lights glow and pulse.
- * Pose changes play a short holographic scan that re-materializes the cat.
+ * Model: "Siamese In Motion" by restore50 on Sketchfab (CC BY 4.0, https://skfb.ly/pKuUt), optimized
+ * for the web (models/kopicat-holo.glb: normalized so the cat is 1 unit tall, paws on y = 0, head
+ * toward +z). It is rendered as a hologram projected from a black circular base, with Kopicat's
+ * cyborg accents (collar and chest core, joint rings, head modules, crystal tail blade) added here.
+ *
+ * Motion: he turns on the base between profile, three quarter and front views (and now and then
+ * all the way around), breathes, sways his tail, flicks his ears, blinks his glowing eyes and turns
+ * his head toward the pointer. Drag him to spin him, click or tap to pet him (purr with sound,
+ * sparks and hearts, a happy spin or hop when petted again quickly). Enter or Space on the pet
+ * button pets, ArrowLeft and ArrowRight turn him.
  *
  * Contract (index.html): div.creature[data-creature] > img.cat-img (static fallback),
- * button[data-cat-pet], span[data-cat-hint], span[data-cat-status]. On success .creature gets
- * .has-3d and data-cat3d="ready". The module hit-tests the cat's own pixels, so the stage never
- * blocks clicks on anything else.
- *
- * Interaction: hover (eyes widen and glow), click or tap to pet (purr with sound, sparks, hearts,
- * happy squint). Three quick pets and he sits down to purr, then stands back up. Every so often he
- * turns to look at the visitor. Mouse drag turns the cat a little, Enter or Space on the pet button
- * pets, ArrowLeft and ArrowRight turn.
- * Motion: prefers-reduced-motion or html.motion-paused render still frames and switch poses without
- * the effect. The loop pauses when the hero is offscreen or the tab is hidden.
- * URL switches (testing): ?cat3d=off keeps the static image, ?cat3d=force allows software WebGL.
- * Test hooks: creature.cat3d.pet(), .setPose(name, { hold }), .forceBlink(frame, ms), .release().
+ * button[data-cat-pet], span[data-cat-hint], span[data-cat-status]. Page blocks marked data-cat-avoid
+ * (the hero text and controls) keep the base and the hint clear of them, shrinking the hologram a
+ * little when the room is tight. On success .creature gets .has-3d and data-cat3d="ready".
+ * The stage never takes pointer input itself, the module ray casts against the cat and the base,
+ * so nearby links and buttons stay clickable.
+ * prefers-reduced-motion or html.motion-paused render still frames. The loop pauses offscreen and
+ * in hidden tabs. URL switches (testing): ?cat3d=off keeps the static image, ?cat3d=force allows
+ * software WebGL.
  */
 
 const TAU = Math.PI * 2;
+const DEG = Math.PI / 180;
 const NAME = "Kopicat";
 const DEFAULT_LABEL = "felis.kopicat · 0.99";
 const MOODS = ["status · purring", "status · purring louder", "status · very happy", "status · best friends"];
-const POSE_LABEL = { front: "status · watching you", sit: "status · sitting pretty" };
 const PURR_MS = 2600;
 const COMBO_MS = 4000;
-const BLINK_MS = 160;
-const TRANS_MS = 560;
 const MUTE_KEY = "purr-muted";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-// World units: 1 = the standing image height (1464 stand px). The world origin is the stand ground
-// point STAND_PIVOT, which sits at the same spot inside the .creature anchor (a 1288 x 1464 box).
-const UNIT = 1464;
-const STAND_W = 1288, STAND_H = 1464;
-const STAND_PIVOT = [600, 1450];
-const MARGIN = 120;               // extra plane around each image for the glow halo (pose px)
-const MAXB = 10;                  // tail bones per pose (shader array size)
-
-// Pose sheets. All coordinates are in that pose's own image pixels (origin top left, y down).
-// k scales a pose to stand px, align = [pose x, stand x] that line up, ground = paw line.
-const POSES = {
-  stand: {
-    file: "kopi-stand", size: [1288, 1464], ground: 1450, k: 1, align: [600, 600],
-    lids: { box: [230, 248, 252, 142], tile: [252, 142] },
-    eyeL: [300.3, 297.9], eyeLR: [27.6, 19.3], eyeLRot: 0.4305,
-    eyeR: [430.1, 323.4], eyeRR: [15.1, 19.8], eyeRRot: 0.3489,
-    headC: [285, 290], headR: [232, 222], neckY: [482, 590], neck: [334, 542],
-    ears: [{ tip: [191, 22], base: [205, 162] }, { tip: [541, 84], base: [446, 206] }],
-    bodyC: [500, 800], bodyR: [380, 230], bodyY: [900, 1060],
-    chestCore: [134, 682],
-    tail: [[842, 815], [910, 882], [985, 926], [1060, 940], [1125, 930], [1180, 905], [1206.6, 787.8], [1222.2, 670], [1256.4, 521.9]],
-    swing: [0.3, 0.55, 0.75, 0.85, 0.9, 0.9, 0.7, 0.1], rigid: 7,
-    hud: [345, 22], hint: [114, 722], hint2: [585, 330], fx: [330, 380], shadow: [40, 990],
-    extPad: [30, 90],
-  },
-  front: {
-    file: "kopi-front", size: [624, 1469], ground: 1455, k: 1.015, align: [308, 285],
-    lids: { box: [170, 223, 276, 127], tile: [276, 127] },
-    eyeL: [229, 281], eyeLR: [33, 23], eyeLRot: 0.06,
-    eyeR: [385, 282], eyeRR: [32, 22], eyeRRot: -0.06,
-    headC: [308, 250], headR: [236, 250], neckY: [440, 545], neck: [308, 470],
-    ears: [{ tip: [114, 24], base: [176, 152] }, { tip: [503, 25], base: [440, 152] }],
-    bodyC: [310, 830], bodyR: [245, 380], bodyY: [960, 1150],
-    chestCore: [303, 686],
-    tail: null,
-    hud: [308, 20], hint: [84, 760], hint2: [560, 300], fx: [308, 360], shadow: [120, 510],
-  },
-  sit: {
-    file: "kopi-sit", size: [2170, 1505], ground: 1474, k: 0.96, align: [802, 560],
-    lids: { box: [128, 252, 144, 90], tile: [144, 90] },
-    eyeL: [192, 300], eyeLR: [36, 18], eyeLRot: -0.22,
-    eyeR: null,
-    headC: [262, 290], headR: [214, 225], neckY: [470, 580], neck: [420, 540],
-    ears: [{ tip: [200, 93], base: [238, 200] }, { tip: [279, 33], base: [330, 210] }],
-    bodyC: [820, 900], bodyR: [470, 430], bodyY: [1150, 1350],
-    chestCore: [544, 660],
-    tail: [[1335.5, 1006], [1423.5, 1376.4], [1579.1, 1426.6], [1745.8, 1426], [1854.9, 1406.5], [1952.5, 1354.6], [2027.2, 1272.9], [2113.3, 996.7]],
-    swing: [0, 0, 0, 0, 0.6, 0.75, 0.15], rigid: 6,
-    hud: [262, 28], hint: [282, 760], hint2: [520, 250], fx: [300, 380], shadow: [300, 1960],
-    extPad: [40, 190],
-  },
+// Model space landmarks (cat height 1, paws on y = 0, head toward +z).
+const LM = {
+  neck: [0, 0.5, 0.5],
+  eyes: [[-0.059, 0.539, 0.747], [0.045, 0.538, 0.749]],
+  ears: [{ base: [-0.098, 0.618, 0.71] }, { base: [0.098, 0.618, 0.71] }],
+  collar: { c: [0, 0.492, 0.53], rx: 0.112, ry: 0.152, tilt: -16 * DEG },
+  core: [0, 0.405, 0.628],
+  rings: [
+    // shoulders, hips, elbows, hocks: [x, y, z, radius]
+    [-0.149, 0.44, 0.4, 0.034], [0.149, 0.44, 0.4, 0.034],
+    [-0.145, 0.46, -0.34, 0.036], [0.146, 0.46, -0.34, 0.036],
+    [-0.147, 0.22, 0.338, 0.022], [0.134, 0.22, 0.54, 0.022],
+    [-0.125, 0.2, -0.468, 0.022], [0.131, 0.2, -0.194, 0.022],
+  ],
+  modules: [[-0.126, 0.615, 0.675], [0.126, 0.615, 0.675]],
+  tail: { tip: [0, 0.971, -0.58], dir: [0, 0.34, 0.94] },   // the tail curls up and over, its tip points forward
 };
-const LID_GAP = 16;
+const BASE_R = 0.86;          // projector base radius (world units, the cat is 1 tall)
+const IDLE = [                 // turntable program: [yaw in degrees, hold in ms]
+  [-52, 4200], [-90, 3000], [-20, 3600], [-52, 2600], ["spin", 0],
+];
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const lerp = (a, b, t) => a + (b - a) * t;
 const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const damp = (cur, target, lambda, dt) => lerp(cur, target, 1 - Math.exp(-lambda * dt));
 const rand = (a, b) => a + Math.random() * (b - a);
-const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const wrapPi = (a) => { a = (a + Math.PI) % TAU; if (a < 0) a += TAU; return a - Math.PI; };
 
 const creature = document.querySelector("[data-creature]");
 let THREE = null;
@@ -133,23 +97,6 @@ function canUseWebGL2(allowSoftware) {
   }
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("image failed: " + src));
-    img.src = src;
-  });
-}
-
-// the four files of one pose: color, glow mask, geometry data (depth + tail weight), eyelid frames
-function loadPoseAssets(base, name, hd) {
-  const f = base + POSES[name].file;
-  return Promise.all([loadImage(f + (hd ? "-hd.webp" : ".webp")), loadImage(f + "-glow.png"), loadImage(f + "-geo.png"), loadImage(f + "-lids.webp")])
-    .then(([map, glow, geo, lids]) => ({ map, glow, geo, lids }));
-}
-
 async function boot() {
   let flag = "";
   try { flag = new URLSearchParams(window.location.search).get("cat3d") || ""; } catch (e) { /* ignore */ }
@@ -159,17 +106,20 @@ async function boot() {
   const force = flag === "force";
   if (!canUseWebGL2(force)) return mark("no-webgl");
   mark("loading");
-  const load = () => import("three");
-  let mod;
-  try { mod = await load(); } catch (err) { await new Promise((r) => setTimeout(r, 1500)); mod = await load(); }
-  THREE = mod;
-  const base = new URL("../images/cat/", import.meta.url).href;
-  // reuse whichever standing image the fallback <img> already picked from its srcset
-  const fallback = creature.querySelector(".cat-img");
-  const picked = fallback && fallback.currentSrc ? fallback.currentSrc : "";
-  const hd = /kopi-stand/.test(picked) ? /-hd\./.test(picked) : (window.devicePixelRatio || 1) >= 1.5;
-  const stand = await loadPoseAssets(base, "stand", hd);
-  createApp(stand, { force, hd, base });
+  const load = () => Promise.all([
+    import("three"),
+    import("three/addons/loaders/GLTFLoader.js"),
+    import("three/addons/libs/meshopt_decoder.module.js"),
+    import("three/addons/environments/RoomEnvironment.js"),
+  ]);
+  let mods;
+  try { mods = await load(); } catch (err) { await new Promise((r) => setTimeout(r, 1500)); mods = await load(); }
+  THREE = mods[0];
+  const loader = new mods[1].GLTFLoader().setMeshoptDecoder(mods[2].MeshoptDecoder);
+  const url = new URL("../models/kopicat-holo.glb", import.meta.url).href;
+  let gltf;
+  try { gltf = await loader.loadAsync(url); } catch (err) { await new Promise((r) => setTimeout(r, 1500)); gltf = await loader.loadAsync(url); }
+  createApp(gltf, mods[3].RoomEnvironment, force);
 }
 
 /* ------------------------------------------------------------------ helpers */
@@ -191,294 +141,194 @@ function speakerIcon() {
   return svg;
 }
 
-function pixelsOf(img, w, h) {
+function glowCanvas(size, inner, outer) {
   const c = document.createElement("canvas");
-  c.width = w; c.height = h;
-  const ctx = c.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(img, 0, 0, w, h);
-  return ctx.getImageData(0, 0, w, h).data;
-}
-
-// blurred glow halo, padded by MARGIN, made by downscaling then upscaling (works in every browser)
-function haloCanvas(glowImg, W, H) {
-  const PW = W + MARGIN * 2, PH = H + MARGIN * 2;
-  const step = (div) => { const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(PW / div)); c.height = Math.max(1, Math.round(PH / div)); return c; };
-  const small = step(14);
-  small.getContext("2d").drawImage(glowImg, MARGIN / 14, MARGIN / 14, W / 14, H / 14);
-  const mid = step(6);
-  const m = mid.getContext("2d");
-  m.imageSmoothingQuality = "high";
-  m.drawImage(small, 0, 0, mid.width, mid.height);
-  const out = step(6);
-  const o = out.getContext("2d");
-  o.drawImage(mid, 0, 0);
-  o.globalAlpha = 0.6;
-  o.drawImage(glowImg, MARGIN / 6, MARGIN / 6, W / 6, H / 6);
-  return out;
-}
-
-function distToSeg(px, py, ax, ay, bx, by) {
-  const dx = bx - ax, dy = by - ay;
-  const t = clamp(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1), 0, 1);
-  const qx = ax + dx * t, qy = ay + dy * t;
-  return [Math.hypot(px - qx, py - qy), t];
+  c.width = c.height = size;
+  const g = c.getContext("2d");
+  const grd = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grd.addColorStop(0, inner);
+  grd.addColorStop(0.35, outer);
+  grd.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, size, size);
+  return c;
 }
 
 /* ------------------------------------------------------------------ shaders */
 
-const VS = /* glsl */ `
-#define MAXB ${MAXB}
-attribute vec2 aUv;
-attribute float aDepth;
-attribute float aHead;
-attribute vec2 aEar;
-attribute float aBody;
-attribute vec3 aTail;
-uniform vec2 uSize;
-uniform vec2 uPivot;
-uniform float uK;
-uniform float uS;
+const CAT_VS = /* glsl */ `
+attribute vec4 aW;   // x head, y tail weight, z tail position (0 base to 1 tip), w torso
+attribute vec2 aE;   // left and right ear weights
 uniform float uTime;
-uniform float uDepthAmt;
-uniform vec2 uNeck;
-uniform float uHeadRot;
-uniform vec2 uHeadShift;
-uniform vec4 uEarBase;
-uniform vec2 uEarRot;
-uniform vec2 uBoneRest[MAXB];
-uniform vec2 uBonePos[MAXB];
-uniform float uBoneRot[MAXB];
-uniform float uBones;
-uniform float uRigid;
-uniform vec2 uBodyC;
+uniform vec2 uHead;  // yaw, pitch (radians)
+uniform vec3 uNeck;
+uniform vec4 uEarL;  // base xyz, angle
+uniform vec4 uEarR;
+uniform float uTailAmp;
+uniform float uTailQuiver;
+uniform float uTailBias;
 uniform float uBreath;
 uniform vec2 uJitter;
-uniform float uReflect;
-varying vec2 vUv;
-varying float vFade;
-varying float vH;
-vec2 rot(vec2 p, vec2 c, float a) {
-  float s = sin(a), co = cos(a);
-  p -= c;
-  return c + vec2(co * p.x - s * p.y, s * p.x + co * p.y);
-}
-vec2 bone(vec2 p, int i) {
-  return uBonePos[i] + rot(p - uBoneRest[i], vec2(0.0), uBoneRot[i]);
-}
-void main() {
-  vUv = aUv;
-  vec2 p0 = aUv * uSize;
-  vec2 p = p0;
-  // tail: linear blend skinning along the bone chain, the blade bone stays rigid
-  if (aTail.x > 0.001 && uBones > 0.5) {
-    int n = int(uBones + 0.5);
-    int rg = int(uRigid + 0.5);
-    int i = int(aTail.y + 0.5);
-    float t = aTail.z;
-    vec2 q = bone(p0, i);
-    if (i < rg) {
-      if (t > 0.5 && i + 1 < rg) q = mix(q, bone(p0, i + 1), t - 0.5);
-      else if (t < 0.5 && i > 0) q = mix(bone(p0, i - 1), q, 0.5 + t);
-    }
-    p = mix(p0, q, aTail.x);
-  }
-  p = rot(p, uEarBase.xy, uEarRot.x * aEar.x);
-  p = rot(p, uEarBase.zw, uEarRot.y * aEar.y);
-  p = rot(p, uNeck, uHeadRot * aHead);
-  p += uHeadShift * aHead;
-  vec2 d = p - uBodyC;
-  p = uBodyC + d * (1.0 + aBody * uBreath * vec2(0.35, 1.0));
-  p += uJitter * (aBody + aHead * 0.6);
-  vH = (uPivot.y - p.y) * uK * uS;
-  vec3 pos = vec3((p.x - uPivot.x) * uK / ${UNIT}.0, (uPivot.y - p.y) * uK / ${UNIT}.0, aDepth * uDepthAmt);
-  vFade = 1.0;
-  if (uReflect > 0.5) {
-    vFade = 1.0 - smoothstep(0.0, 0.2, pos.y);
-    pos.y = -pos.y * 0.92;
-    pos.z *= 0.6;
-  }
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-}
-`;
-
-const FS = /* glsl */ `
-uniform sampler2D uMap;
-uniform sampler2D uGlow;
-uniform sampler2D uHalo;
-uniform sampler2D uLids;
-uniform vec2 uSize;
-uniform float uMargin;
-uniform float uTime;
-uniform vec2 uEyeL; uniform vec2 uEyeLR; uniform float uEyeLRot;
-uniform vec2 uEyeR; uniform vec2 uEyeRR; uniform float uEyeRRot;
-uniform vec2 uLook;
-uniform float uEyeBoost;
-uniform float uGlowAmt;
-uniform float uSweep;
-uniform vec2 uCore;
-uniform float uCorePulse;
-uniform vec4 uLidBox;
-uniform vec2 uLidRow;
-uniform vec3 uLidW;
-uniform float uReflect;
-uniform float uScanY;
-uniform float uScanMode;
 uniform float uGlitch;
+uniform float uGlitchSeed;
+uniform mat3 uMapT;
+varying vec3 vN;
+varying vec3 vV;
 varying vec2 vUv;
-varying float vFade;
-varying float vH;
-
-float hash(float n) { return fract(sin(n) * 43758.5453); }
-vec4 texAt(vec2 px) {
-  vec2 uv = px / uSize;
-  if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return vec4(0.0);
-  return texture2D(uMap, uv);
-}
-vec2 eyeLocal(vec2 px, vec2 c, float a) {
-  vec2 d = px - c;
-  float s = sin(a), co = cos(a);
-  return vec2(co * d.x + s * d.y, -s * d.x + co * d.y);
-}
-// gaze: the content inside the eye opening shifts toward the pointer, fading to zero at the rim
-vec2 gaze(vec2 px, vec2 c, vec2 r, float a) {
-  vec2 q = eyeLocal(px, c, a) / r;
-  float w = 1.0 - smoothstep(0.35, 0.95, length(q));
-  return -uLook * r * vec2(0.34, 0.26) * w;
-}
-float eyeMask(vec2 px, vec2 c, vec2 r, float a, float i0, float i1) {
-  return 1.0 - smoothstep(i0, i1, length(eyeLocal(px, c, a) / r));
-}
-
+varying float vY;
+varying float vTail;
+varying float vHead;
+mat3 rotY(float a) { float s = sin(a), c = cos(a); return mat3(c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c); }
+mat3 rotX(float a) { float s = sin(a), c = cos(a); return mat3(1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c); }
+mat3 rotZ(float a) { float s = sin(a), c = cos(a); return mat3(c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0); }
 void main() {
-  vec2 px = vUv * uSize;
-  if (uReflect > 0.5) px.x += sin(px.y * 0.11 + uTime * 2.2) * 2.8;
-
-  // transition: the scan line, slice glitches and a chromatic split
-  float scanD = vH - uScanY;
-  float band = abs(uScanMode) > 0.5 ? exp(-scanD * scanD / 420.0) : 0.0;
-  float gl = clamp(uGlitch + band * 0.9, 0.0, 1.5);
-  vec2 gpx = px;
-  float ca = 0.0;
-  if (gl > 0.001) {
-    float sl = floor(px.y / 22.0);
-    float tq = floor(uTime * 30.0);
-    float r = hash(sl * 13.7 + tq * 7.1);
-    gpx.x += (r > 0.68 ? (hash(sl * 3.1 + tq * 1.3) - 0.5) * 64.0 : 0.0) * gl;
-    ca = 9.0 * gl;
-  }
-
-  vec2 spx = gpx + gaze(gpx, uEyeL, uEyeLR, uEyeLRot) + gaze(gpx, uEyeR, uEyeRR, uEyeRRot);
-  vec4 col = texAt(spx);
-  if (ca > 0.0) {
-    vec4 cr = texAt(spx + vec2(ca, 0.0));
-    vec4 cb = texAt(spx - vec2(ca, 0.0));
-    col = vec4(cr.r, col.g, cb.b, max(col.a, max(cr.a, cb.a)));
-  }
-
-  // painted eyelid frames (premultiplied atlas: half, closed, happy), crossfaded by weight
-  float lidCover = 0.0;
-  vec2 lq = (gpx - uLidBox.xy) / uLidBox.zw;
-  if (uLidW.x + uLidW.y + uLidW.z > 0.002 && lq.x > 0.0 && lq.y > 0.0 && lq.x < 1.0 && lq.y < 1.0) {
-    vec2 a = vec2(lq.x, lq.y * uLidRow.x);
-    vec4 h = texture2D(uLids, a) * uLidW.x;
-    vec4 c = texture2D(uLids, a + vec2(0.0, uLidRow.y)) * uLidW.y;
-    vec4 hp = texture2D(uLids, a + vec2(0.0, 2.0 * uLidRow.y)) * uLidW.z;
-    col = h + col * (1.0 - h.a);
-    col = c + col * (1.0 - c.a);
-    col = hp + col * (1.0 - hp.a);
-    lidCover = max(h.a, max(c.a, hp.a));
-  }
-
-  vec2 uv = px / uSize;
-  float inImg = step(0.0, uv.x) * step(0.0, uv.y) * step(uv.x, 1.0) * step(uv.y, 1.0);
-  float g = texture2D(uGlow, clamp(uv, 0.0, 1.0)).r * inImg;
-  float ge = texture2D(uGlow, clamp(spx / uSize, 0.0, 1.0)).r * inImg;
-  float eyes = eyeMask(gpx, uEyeL, uEyeLR, uEyeLRot, 0.6, 1.25) + eyeMask(gpx, uEyeR, uEyeRR, uEyeRRot, 0.6, 1.25);
-  float pulse = 0.5 + 0.5 * sin(uTime * 1.7);
-  float diag = (px.x * 0.75 + px.y * 0.55) / uSize.y;
-  float sweep = exp(-pow(diag - uSweep, 2.0) * 160.0);
-  float core = 1.0 - smoothstep(36.0, 92.0, length(px - uCore));
-  vec3 blue = vec3(0.42, 0.6, 1.0);
-  float open = 1.0 - lidCover;
-  float lit = g * uGlowAmt * (0.22 + 0.18 * pulse + 0.9 * sweep + core * uCorePulse * 1.1) * open + ge * eyes * uEyeBoost * open;
-  col.rgb += blue * lit * col.a;
-
-  // neon rim from the city: magenta on left-facing edges, cyan on right-facing edges
-  float aL = texAt(gpx - vec2(6.0, 0.0)).a, aR = texAt(gpx + vec2(6.0, 0.0)).a;
-  float aU = texAt(gpx - vec2(0.0, 6.0)).a, aD = texAt(gpx + vec2(0.0, 6.0)).a;
-  vec2 grad = vec2(aR - aL, aD - aU);
-  float edge = clamp(length(grad) * 1.1, 0.0, 1.0) * col.a;
-  vec3 rim = mix(vec3(1.0, 0.32, 0.86), vec3(0.25, 0.85, 1.0), step(grad.x, 0.0));
-  col.rgb += rim * edge * 0.2 * (1.0 - step(0.5, uReflect));
-
-  // halo bloom around the blue lights (additive, adds no coverage), dimmed around shut eyes
-  vec2 huv = (px + vec2(uMargin)) / (uSize + vec2(uMargin * 2.0));
-  float h = texture2D(uHalo, huv).r;
-  float shut = clamp(uLidW.y + uLidW.z + uLidW.x * 0.5, 0.0, 1.0);
-  float nearEyes = eyeMask(px, uEyeL, uEyeLR, uEyeLRot, 1.2, 3.2) + eyeMask(px, uEyeR, uEyeRR, uEyeRRot, 1.2, 3.2);
-  h *= 1.0 - shut * clamp(nearEyes, 0.0, 1.0);
-  vec3 halo = blue * h * (0.32 + 0.22 * pulse + uCorePulse * 0.35 * core) * uGlowAmt;
-
-  // holographic re-materialize: solid on one side of the scan line, hologram stripes near it
-  float vis = 1.0;
-  vec3 add = vec3(0.0);
-  if (abs(uScanMode) > 0.5) {
-    float side = uScanMode > 0.0 ? -scanD : scanD;
-    float stripes = 0.5 + 0.5 * sin(vH * 0.72 - uTime * 42.0);
-    float solid = smoothstep(-1.5, 1.5, side);
-    float holo = solid * (1.0 - smoothstep(0.0, 120.0, side));
-    float ghost = (1.0 - solid) * (1.0 - smoothstep(0.0, uScanMode > 0.0 ? 170.0 : 80.0, -side)) * stripes * (uScanMode > 0.0 ? 0.3 : 0.55);
-    vis = solid * mix(1.0, 0.42 + 0.58 * stripes, holo * 0.85) + ghost;
-    vec3 tint = mix(vec3(0.45, 0.62, 1.0), vec3(0.74, 0.52, 1.0), 0.5 + 0.5 * sin(vH * 0.012 + uTime * 3.0));
-    float lum = dot(col.rgb, vec3(0.3, 0.59, 0.11));
-    col.rgb = mix(col.rgb, tint * (lum * 1.25 + 0.22 * col.a), clamp(holo * 0.7 + (1.0 - solid), 0.0, 1.0));
-    add = tint * col.a * band * 2.5 + tint * band * 0.08 * texAt(px).a;
-  }
-
-  if (uReflect > 0.5) {
-    float f = vFade * 0.3;
-    col.rgb *= vec3(0.5, 0.56, 0.82) * f;
-    col.a *= f;
-    halo *= f * 0.6;
-    add *= f;
-  }
-  gl_FragColor = vec4((col.rgb + halo) * vis + add, col.a * vis);
+  vec3 p = position;
+  vec3 n = normal;
+  // breathing: the torso widens a little
+  p.x *= 1.0 + uBreath * aW.w;
+  p.y += uBreath * aW.w * 0.4 * (p.y - 0.3);
+  // ear flicks around each ear base
+  p = uEarL.xyz + rotZ(uEarL.w * aE.x) * (p - uEarL.xyz);
+  p = uEarR.xyz + rotZ(uEarR.w * aE.y) * (p - uEarR.xyz);
+  // tail sway, stronger toward the tip
+  float s = aW.z;
+  float sway = (sin(uTime * 1.6 - s * 3.0) * uTailAmp + sin(uTime * 21.0 - s * 7.0) * uTailQuiver + uTailBias) * pow(s, 1.3) * aW.y;
+  p.x += sway;
+  // head turn around the neck
+  mat3 R = rotY(uHead.x * aW.x) * rotX(uHead.y * aW.x);
+  p = uNeck + R * (p - uNeck);
+  n = R * n;
+  // purr vibration
+  p.xy += uJitter * (aW.w + aW.x * 0.6);
+  vec4 wp = modelMatrix * vec4(p, 1.0);
+  // glitch: thin horizontal slices jump sideways
+  float band = floor(p.y * 42.0 + uGlitchSeed * 17.0);
+  float gl = step(0.7, fract(sin(band * 91.7 + uGlitchSeed * 3.1) * 4375.85)) * uGlitch;
+  wp.x += gl * (fract(sin(band * 12.9 + uGlitchSeed) * 9137.3) - 0.5) * 0.14;
+  vY = p.y;
+  vUv = (uMapT * vec3(uv, 1.0)).xy;
+  vN = normalize(mat3(modelMatrix) * n);
+  vV = normalize(cameraPosition - wp.xyz);
+  vTail = aW.y;
+  vHead = aW.x;
+  gl_Position = projectionMatrix * viewMatrix * wp;
 }
 `;
 
-// scan beam and ground ring drawn during a pose change (additive light, no coverage)
-const FX_VS = /* glsl */ `
+const CAT_FS = /* glsl */ `
+uniform sampler2D uMap;
+uniform float uTime;
+uniform float uIntensity;
+uniform float uBuild;
+uniform float uScan;
+uniform float uPulse;
+uniform float uEye;
+uniform float uFlicker;
+uniform float uHover;
+uniform float uStatic;
+varying vec3 vN;
+varying vec3 vV;
+varying vec2 vUv;
+varying float vY;
+varying float vTail;
+varying float vHead;
+void main() {
+  if (vY > uBuild) discard;
+  vec3 tex = texture2D(uMap, vUv).rgb;
+  float lum = dot(tex, vec3(0.299, 0.587, 0.114));
+  float eye = smoothstep(0.06, 0.2, tex.b - max(tex.r, tex.g)) * vHead;
+  float ndv = abs(dot(normalize(vN), normalize(vV)));
+  float fres = pow(1.0 - ndv, 2.0);
+  // fur and markings: light fur glows, the darker lynx points stay deep blue
+  vec3 deep = vec3(0.08, 0.13, 0.55);
+  vec3 light = vec3(0.55, 0.78, 1.0);
+  vec3 col = mix(deep, light, pow(lum, 0.8)) * (0.22 + 0.95 * lum);
+  // edges: violet and cyan rim, like light caught in the projection
+  col += vec3(0.62, 0.42, 1.0) * fres * 0.9 + vec3(0.6, 0.95, 1.0) * pow(fres, 4.0) * 0.8;
+  // scan lines and a sweep that travels up the body
+  float lines = mix(0.66 + 0.34 * sin(vY * 620.0 - uTime * 9.0), 0.86, uStatic);
+  col *= lines;
+  col += vec3(0.45, 0.75, 1.0) * exp(-pow((vY - uScan) * 18.0, 2.0)) * 0.5;
+  // eyes glow
+  col += vec3(0.65, 0.95, 1.0) * eye * uEye * 1.6;
+  col *= uFlicker * (1.0 + uPulse * 0.65 + uHover * 0.18);
+  // materialize edge while the hologram builds up from the base
+  float edge = exp(-pow((uBuild - vY) * 55.0, 2.0)) * step(uBuild, 1.04);
+  col += vec3(0.75, 0.9, 1.0) * edge * 1.6;
+  col *= uIntensity;
+  gl_FragColor = vec4(col, max(col.r, max(col.g, col.b)));
+}
+`;
+
+const DEPTH_FS = /* glsl */ `
+uniform float uBuild;
+varying float vY;
+void main() { if (vY > uBuild) discard; gl_FragColor = vec4(0.0); }
+`;
+
+const SIMPLE_VS = /* glsl */ `
 varying vec2 vUv;
 void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
 `;
-const FX_FS = /* glsl */ `
-uniform float uKind;
-uniform float uAmt;
-uniform float uTime;
+
+const DISC_FS = /* glsl */ `
+uniform float uTime; uniform float uOn; uniform float uPulse;
 varying vec2 vUv;
 void main() {
-  vec3 blue = vec3(0.45, 0.65, 1.0), violet = vec3(0.75, 0.5, 1.0);
-  vec3 c = mix(blue, violet, 0.5 + 0.5 * sin(vUv.x * 6.0 + uTime * 5.0));
-  float i;
-  if (uKind < 0.5) {
-    float y = (vUv.y - 0.5) * 2.0;
-    float x = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);
-    i = (exp(-y * y * 110.0) * 2.0 + exp(-y * y * 9.0) * 0.5) * x;
-    i *= 0.85 + 0.15 * sin(vUv.x * 140.0 - uTime * 30.0);
-  } else {
-    vec2 q = (vUv - 0.5) * 2.0;
-    float r = length(q);
-    i = exp(-pow((r - 0.78) / 0.09, 2.0)) * 0.9 + exp(-r * r * 2.5) * 0.25;
-    i *= 1.0 - smoothstep(0.92, 1.0, r);
-  }
-  i *= uAmt;
-  gl_FragColor = vec4(c * i, i * 0.12);
+  vec2 p = vUv - 0.5;
+  float r = length(p) * 2.0;
+  float a = atan(p.y, p.x);
+  float rings = 0.5 + 0.5 * sin(r * 56.0 - uTime * 2.6);
+  float spokes = smoothstep(0.92, 1.0, 0.5 + 0.5 * sin(a * 36.0 + uTime * 0.4)) * smoothstep(0.62, 0.7, r) * (1.0 - smoothstep(0.9, 0.98, r));
+  float core = exp(-r * r * 9.0);
+  float v = (1.0 - smoothstep(0.82, 1.0, r)) * (0.16 + 0.24 * rings) + spokes * 0.55 + core * (0.45 + uPulse * 0.6);
+  vec3 c = vec3(0.3, 0.48, 1.0) * v * uOn;
+  gl_FragColor = vec4(c, c.b);
+}
+`;
+
+const BEAM_FS = /* glsl */ `
+uniform float uTime; uniform float uOn;
+varying vec2 vUv;
+void main() {
+  float fade = pow(1.0 - vUv.y, 1.7);
+  float streaks = 0.75 + 0.25 * sin(vUv.x * 120.0 + uTime * 1.6) * sin(vUv.x * 37.0 - uTime * 0.9);
+  float v = fade * 0.13 * streaks;
+  vec3 c = vec3(0.38, 0.55, 1.0) * v * uOn;
+  gl_FragColor = vec4(c, c.b);
+}
+`;
+
+const PTS_VS = /* glsl */ `
+attribute float aSeed;
+uniform float uTime; uniform float uH; uniform float uPx;
+varying float vA;
+void main() {
+  vec3 p = position;
+  float y = fract(p.y + uTime * (0.05 + aSeed * 0.07)) * uH;
+  p.y = y;
+  p.x += sin(uTime * 0.7 + aSeed * 30.0) * 0.02;
+  vA = (1.0 - y / uH) * (0.4 + 0.6 * fract(aSeed * 7.3));
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  gl_PointSize = uPx * (0.5 + aSeed) / -mv.z;
+  gl_Position = projectionMatrix * mv;
+}
+`;
+
+const PTS_FS = /* glsl */ `
+uniform float uOn;
+varying float vA;
+void main() {
+  float d = length(gl_PointCoord - 0.5);
+  float a = smoothstep(0.5, 0.0, d) * vA * uOn;
+  vec3 c = vec3(0.55, 0.75, 1.0) * a;
+  gl_FragColor = vec4(c, c.b);
 }
 `;
 
 /* ------------------------------------------------------------------ app */
 
-function createApp(standAssets, opts) {
+function createApp(gltf, RoomEnvironment, allowSoftware) {
   const T = THREE;
   const petBtn = creature.querySelector("[data-cat-pet]");
   const hint = creature.querySelector("[data-cat-hint]");
@@ -505,318 +355,358 @@ function createApp(standAssets, opts) {
 
   let renderer;
   try {
-    renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: "high-performance", failIfMajorPerformanceCaveat: !opts.force });
+    renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: "high-performance", failIfMajorPerformanceCaveat: !allowSoftware });
   } catch (e) {
     stage.remove(); hud.remove();
     mark("no-webgl");
     return;
   }
   renderer.setClearColor(0x000000, 0);
+  renderer.outputColorSpace = T.SRGBColorSpace;
+  renderer.toneMapping = T.ACESFilmicToneMapping;
   const coarse = window.matchMedia("(pointer: coarse)").matches;
-  const maxDpr = coarse ? 1.5 : 2;
-  const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const maxDpr = coarse ? 1.5 : 1.75;
 
   const scene = new T.Scene();
-  const group = new T.Group();
-  scene.add(group);
-  const tilt = new T.Group();
-  group.add(tilt);
+  const pmrem = new T.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  const camera = new T.PerspectiveCamera(22, 1, 0.05, 50);
+  const PITCH = 13 * DEG;
+  const LOOK_Y = 0.42;
 
-  // soft contact shadow under the paws (resized per pose)
-  const shC = document.createElement("canvas");
-  shC.width = 256; shC.height = 64;
-  const sg = shC.getContext("2d");
-  const grd = sg.createRadialGradient(128, 32, 4, 128, 32, 128);
-  grd.addColorStop(0, "rgba(3,2,10,0.75)");
-  grd.addColorStop(0.5, "rgba(3,2,10,0.35)");
-  grd.addColorStop(1, "rgba(3,2,10,0)");
-  sg.fillStyle = grd;
-  sg.fillRect(0, 0, 256, 64);
-  const shadow = new T.Mesh(new T.PlaneGeometry(1, 0.11), new T.MeshBasicMaterial({ map: new T.CanvasTexture(shC), transparent: true, depthWrite: false, depthTest: false }));
-  shadow.position.set(0, -0.006, -0.01);
-  shadow.renderOrder = 1;
-  tilt.add(shadow);
+  // Light added on top of the page. Every pass writes premultiplied color with its brightest
+  // channel as alpha, and both add up, so the canvas composites like a screen over the page.
+  // Built in materials get the same output through a small patch at the end of their shader.
+  const PREMUL = "  gl_FragColor.rgb *= gl_FragColor.a;\n  gl_FragColor.a = max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b));\n}\n";
+  const additive = (m) => {
+    m.transparent = true;
+    m.depthWrite = false;
+    m.blending = T.CustomBlending;
+    m.blendEquation = T.AddEquation;
+    m.blendSrc = m.blendDst = m.blendSrcAlpha = m.blendDstAlpha = T.OneFactor;
+    m.toneMapped = false;
+    if (!m.isShaderMaterial) m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace(/\}\s*$/, PREMUL); };
+    return m;
+  };
 
-  // transition light: a horizontal scan beam and a projector ring on the ground
-  const fxMat = (kind) => new T.ShaderMaterial({ uniforms: { uKind: { value: kind }, uAmt: { value: 0 }, uTime: { value: 0 } }, vertexShader: FX_VS, fragmentShader: FX_FS, transparent: true, depthWrite: false, depthTest: false, premultipliedAlpha: true });
-  const beam = new T.Mesh(new T.PlaneGeometry(1, 1), fxMat(0));
-  beam.renderOrder = 5; beam.visible = false;
-  const ring = new T.Mesh(new T.PlaneGeometry(1, 1), fxMat(1));
-  ring.renderOrder = 1; ring.visible = false;
-  tilt.add(beam, ring);
-
-  const camera = new T.PerspectiveCamera(20, 1, 0.05, 50);
-  let stageW = 1, stageH = 1, anchorH = 1, originX = 0, originY = 0, vw = 1;
-
-  /* -------------------------------------------------------------- poses */
-  const rigs = {};
-  const pending = {};
-
-  function texture(img, premul, mips) {
-    const t = new T.Texture(img);
-    t.flipY = false;
-    t.premultiplyAlpha = !!premul;
-    if (mips) { t.anisotropy = maxAniso; t.minFilter = T.LinearMipmapLinearFilter; }
-    else { t.generateMipmaps = false; t.minFilter = T.LinearFilter; }
-    t.needsUpdate = true;
-    return t;
+  /* -------------------------------------------------------------- the cat geometry */
+  let srcMesh = null;
+  gltf.scene.updateMatrixWorld(true);
+  gltf.scene.traverse((o) => { if (o.isMesh && !srcMesh) srcMesh = o; });
+  const sg = srcMesh.geometry;
+  const map = srcMesh.material.map;
+  map.updateMatrix();
+  const mw = srcMesh.matrixWorld;
+  const nmat = new T.Matrix3().getNormalMatrix(mw);
+  const vc = sg.attributes.position.count;
+  const P = new Float32Array(vc * 3), NN = new Float32Array(vc * 3), UV = new Float32Array(vc * 2);
+  const W4 = new Float32Array(vc * 4), E2 = new Float32Array(vc * 2);
+  const v3 = new T.Vector3();
+  for (let i = 0; i < vc; i++) {
+    v3.fromBufferAttribute(sg.attributes.position, i).applyMatrix4(mw);
+    const x = v3.x, y = v3.y, z = v3.z;
+    P[i * 3] = x; P[i * 3 + 1] = y; P[i * 3 + 2] = z;
+    v3.fromBufferAttribute(sg.attributes.normal, i).applyMatrix3(nmat).normalize();
+    NN[i * 3] = v3.x; NN[i * 3 + 1] = v3.y; NN[i * 3 + 2] = v3.z;
+    UV[i * 2] = sg.attributes.uv.getX(i); UV[i * 2 + 1] = sg.attributes.uv.getY(i);
+    // animation weights from the vertex position
+    const head = sstep(0.5, 0.64, z) * sstep(0.4, 0.5, y);
+    const tailW = sstep(-0.44, -0.52, z) * sstep(0.55, 0.63, y);
+    const tailS = clamp((y - 0.58) / 0.42, 0, 1);
+    const torso = sstep(-0.5, -0.36, z) * (1 - sstep(0.38, 0.5, z)) * sstep(0.3, 0.4, y) * (1 - sstep(0.6, 0.68, y)) * (1 - tailW);
+    W4[i * 4] = head; W4[i * 4 + 1] = tailW; W4[i * 4 + 2] = tailS; W4[i * 4 + 3] = torso;
+    const ear = sstep(0.6, 0.66, y) * sstep(0.64, 0.68, z);
+    E2[i * 2] = ear * sstep(-0.035, -0.07, x);
+    E2[i * 2 + 1] = ear * sstep(0.035, 0.07, x);
   }
+  const geo = new T.BufferGeometry();
+  geo.setAttribute("position", new T.BufferAttribute(P, 3));
+  geo.setAttribute("normal", new T.BufferAttribute(NN, 3));
+  geo.setAttribute("uv", new T.BufferAttribute(UV, 2));
+  geo.setAttribute("aW", new T.BufferAttribute(W4, 4));
+  geo.setAttribute("aE", new T.BufferAttribute(E2, 2));
+  if (sg.index) geo.setIndex(new T.BufferAttribute(sg.index.array.slice(), 1));
+  geo.computeBoundingSphere();
+  geo.computeBoundingBox();
+  sg.dispose();
 
-  function buildPose(name, a) {
-    const D = POSES[name];
-    const [W, H] = D.size;
-    const mapTex = texture(a.map, true, true);
-    const glowTex = texture(a.glow, false, false);
-    const lidsTex = texture(a.lids, true, true);
-    const haloTex = new T.CanvasTexture(haloCanvas(a.glow, W, H));
-    haloTex.flipY = false;
+  const U = {
+    uMap: { value: map }, uMapT: { value: map.matrix },
+    uTime: { value: 0 }, uIntensity: { value: 1 },
+    uHead: { value: new T.Vector2() }, uNeck: { value: new T.Vector3(...LM.neck) },
+    uEarL: { value: new T.Vector4(...LM.ears[0].base, 0) }, uEarR: { value: new T.Vector4(...LM.ears[1].base, 0) },
+    uTailAmp: { value: 0.03 }, uTailQuiver: { value: 0 }, uTailBias: { value: 0 },
+    uBreath: { value: 0 }, uJitter: { value: new T.Vector2() },
+    uGlitch: { value: 0 }, uGlitchSeed: { value: 0 },
+    uBuild: { value: 0 }, uScan: { value: -1 }, uPulse: { value: 0 }, uEye: { value: 1 }, uFlicker: { value: 1 }, uHover: { value: 0 }, uStatic: { value: 0 },
+  };
+  const catMat = (opts) => additive(new T.ShaderMaterial(Object.assign({ uniforms: U, vertexShader: CAT_VS, fragmentShader: CAT_FS }, opts)));
+  const backMat = catMat({ side: T.BackSide, depthTest: false, uniforms: Object.assign({}, U, { uIntensity: { value: 0.2 } }) });
+  const frontMat = catMat({ side: T.FrontSide });
+  const depthMat = new T.ShaderMaterial({ uniforms: U, vertexShader: CAT_VS, fragmentShader: DEPTH_FS, colorWrite: false, depthWrite: true });
 
-    // CPU copies: alpha (quarter size) for hit testing, depth and tail weight for the vertices
-    const AW = Math.round(W / 4), AH = Math.round(H / 4);
-    const alphaPx = pixelsOf(a.map, AW, AH);
-    const alphaAt = (x, y) => {
-      const xi = Math.round(x / 4), yi = Math.round(y / 4);
-      if (xi < 0 || yi < 0 || xi >= AW || yi >= AH) return 0;
-      return alphaPx[(yi * AW + xi) * 4 + 3] / 255;
-    };
-    let bx0 = AW, bx1 = 0, by0 = AH;
-    for (let y = 0; y < AH; y++) {
-      for (let x = 0; x < AW; x++) {
-        if (alphaPx[(y * AW + x) * 4 + 3] > 40) { if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; }
-      }
-    }
-    const GW = a.geo.naturalWidth, GH = a.geo.naturalHeight;
-    const geoPx = pixelsOf(a.geo, GW, GH);
-    const geoAt = (x, y, ch) => {
-      const gx = clamp((x / W) * GW - 0.5, 0, GW - 1), gy = clamp((y / H) * GH - 0.5, 0, GH - 1);
-      const x0 = Math.floor(gx), y0 = Math.floor(gy), x1 = Math.min(GW - 1, x0 + 1), y1 = Math.min(GH - 1, y0 + 1);
-      const fx_ = gx - x0, fy = gy - y0;
-      const v = (xx, yy) => geoPx[(yy * GW + xx) * 4 + ch] / 255;
-      return lerp(lerp(v(x0, y0), v(x1, y0), fx_), lerp(v(x0, y1), v(x1, y1), fx_), fy);
-    };
+  const world = new T.Group();     // the projector and everything on it
+  scene.add(world);
+  const spin = new T.Group();      // turntable: the cat and his accents
+  world.add(spin);
+  const lift = new T.Group();      // hop
+  spin.add(lift);
+  const catBack = new T.Mesh(geo, backMat); catBack.renderOrder = 2; catBack.frustumCulled = false;
+  const catDepth = new T.Mesh(geo, depthMat); catDepth.renderOrder = 3; catDepth.frustumCulled = false;
+  const catFront = new T.Mesh(geo, frontMat); catFront.renderOrder = 4; catFront.frustumCulled = false;
+  lift.add(catBack, catDepth, catFront);
 
-    // tail bones
-    let bones = null;
-    if (D.tail) {
-      const n = D.tail.length - 1;
-      const rest = D.tail.map(([x, y]) => new T.Vector2(x, y));
-      while (rest.length < MAXB) rest.push(new T.Vector2());
-      const pos = rest.map((v) => v.clone());
-      bones = { n, rest, pos, rot: new Array(MAXB).fill(0), swing: D.swing, rigid: D.rigid };
-    }
-
-    // geometry over the image plus a glow margin, with per-vertex animation weights
-    const cell = coarse ? 14 : 11;
-    const x0 = -MARGIN, y0 = -MARGIN, x1 = W + MARGIN, y1 = H + MARGIN;
-    const NX = Math.round((x1 - x0) / cell), NY = Math.round((y1 - y0) / cell);
-    const nv = (NX + 1) * (NY + 1);
-    const aPos = new Float32Array(nv * 3), aUv = new Float32Array(nv * 2), aDepth = new Float32Array(nv);
-    const aHead = new Float32Array(nv), aEar = new Float32Array(nv * 2), aTail = new Float32Array(nv * 3), aBody = new Float32Array(nv);
-    const sc = D.k / UNIT;
-    for (let j = 0, k = 0; j <= NY; j++) {
-      for (let i = 0; i <= NX; i++, k++) {
-        const x = lerp(x0, x1, i / NX), y = lerp(y0, y1, j / NY);
-        aPos[k * 3] = (x - D.align[0]) * sc;
-        aPos[k * 3 + 1] = (D.ground - y) * sc;
-        aUv[k * 2] = x / W;
-        aUv[k * 2 + 1] = y / H;
-        aDepth[k] = geoAt(x, y, 0);
-        // head (ears included), fading out across the neck
-        const he = Math.hypot((x - D.headC[0]) / D.headR[0], (y - D.headC[1]) / D.headR[1]);
-        let head = 1 - sstep(0.86, 1.12, he);
-        for (let e = 0; e < 2; e++) {
-          const ear = D.ears[e];
-          const len = Math.hypot(ear.tip[0] - ear.base[0], ear.tip[1] - ear.base[1]);
-          aEar[k * 2 + e] = clamp(1 - Math.hypot(x - ear.tip[0], y - ear.tip[1]) / (len * 1.15), 0, 1);
-          const [d] = distToSeg(x, y, ear.base[0], ear.base[1], ear.tip[0], ear.tip[1]);
-          head = Math.max(head, 1 - sstep(len * 0.32, len * 0.55, d));
-        }
-        aHead[k] = head * (1 - sstep(D.neckY[0], D.neckY[1], y));
-        // tail: weight from the tail mask, nearest bone and the position along it
-        let tw = 0, bi = 0, bt = 0;
-        if (bones) {
-          tw = geoAt(x, y, 1);
-          if (tw > 0.002) {
-            let best = Infinity;
-            for (let b = 0; b < bones.n; b++) {
-              const [d, u] = distToSeg(x, y, D.tail[b][0], D.tail[b][1], D.tail[b + 1][0], D.tail[b + 1][1]);
-              if (d < best) { best = d; bi = b; bt = u; }
-            }
-          } else tw = 0;
-        }
-        aTail[k * 3] = tw; aTail[k * 3 + 1] = bi; aTail[k * 3 + 2] = bt;
-        // torso breathing, legs and paws stay planted
-        const be = Math.hypot((x - D.bodyC[0]) / D.bodyR[0], (y - D.bodyC[1]) / D.bodyR[1]);
-        aBody[k] = (1 - sstep(0.7, 1.05, be)) * (1 - sstep(D.bodyY[0], D.bodyY[1], y)) * (1 - tw) * (1 - aHead[k]);
-      }
-    }
-    const idx = [];
-    for (let j = 0; j < NY; j++) {
-      for (let i = 0; i < NX; i++) {
-        const p = j * (NX + 1) + i, q = p + 1, r = p + NX + 1, s = r + 1;
-        idx.push(p, r, q, q, r, s);
-      }
-    }
-    const geo = new T.BufferGeometry();
-    geo.setIndex(idx);
-    geo.setAttribute("position", new T.BufferAttribute(aPos, 3));
-    geo.setAttribute("aUv", new T.BufferAttribute(aUv, 2));
-    geo.setAttribute("aDepth", new T.BufferAttribute(aDepth, 1));
-    geo.setAttribute("aHead", new T.BufferAttribute(aHead, 1));
-    geo.setAttribute("aEar", new T.BufferAttribute(aEar, 2));
-    geo.setAttribute("aTail", new T.BufferAttribute(aTail, 3));
-    geo.setAttribute("aBody", new T.BufferAttribute(aBody, 1));
-
-    const lid = D.lids;
-    const atlasH = lid.tile[1] * 3 + LID_GAP * 2;
-    const eyeR = D.eyeR || [-9999, -9999], eyeRR = D.eyeRR || [1, 1];
-    const U = {
-      uMap: { value: mapTex }, uGlow: { value: glowTex }, uHalo: { value: haloTex }, uLids: { value: lidsTex },
-      uSize: { value: new T.Vector2(W, H) }, uPivot: { value: new T.Vector2(D.align[0], D.ground) }, uK: { value: D.k },
-      uMargin: { value: MARGIN }, uTime: { value: 0 }, uDepthAmt: { value: 0.075 },
-      uNeck: { value: new T.Vector2(D.neck[0], D.neck[1]) }, uHeadRot: { value: 0 }, uHeadShift: { value: new T.Vector2() },
-      uEarBase: { value: new T.Vector4(D.ears[0].base[0], D.ears[0].base[1], D.ears[1].base[0], D.ears[1].base[1]) }, uEarRot: { value: new T.Vector2() },
-      uBoneRest: { value: bones ? bones.rest : Array.from({ length: MAXB }, () => new T.Vector2()) },
-      uBonePos: { value: bones ? bones.pos : Array.from({ length: MAXB }, () => new T.Vector2()) },
-      uBoneRot: { value: bones ? bones.rot : new Array(MAXB).fill(0) },
-      uBones: { value: bones ? bones.n : 0 }, uRigid: { value: bones ? bones.rigid : 0 },
-      uBodyC: { value: new T.Vector2(D.bodyC[0], D.bodyC[1]) }, uBreath: { value: 0 }, uJitter: { value: new T.Vector2() },
-      uEyeL: { value: new T.Vector2(D.eyeL[0], D.eyeL[1]) }, uEyeLR: { value: new T.Vector2(D.eyeLR[0], D.eyeLR[1]) }, uEyeLRot: { value: D.eyeLRot },
-      uEyeR: { value: new T.Vector2(eyeR[0], eyeR[1]) }, uEyeRR: { value: new T.Vector2(eyeRR[0], eyeRR[1]) }, uEyeRRot: { value: D.eyeRRot || 0 },
-      uLook: { value: new T.Vector2() }, uEyeBoost: { value: 0.35 },
-      uLidBox: { value: new T.Vector4(lid.box[0], lid.box[1], lid.box[2], lid.box[3]) },
-      uLidRow: { value: new T.Vector2(lid.tile[1] / atlasH, (lid.tile[1] + LID_GAP) / atlasH) },
-      uLidW: { value: new T.Vector3() },
-      uGlowAmt: { value: 1 }, uSweep: { value: -1 }, uCore: { value: new T.Vector2(D.chestCore[0], D.chestCore[1]) }, uCorePulse: { value: 0 },
-      uReflect: { value: 0 }, uScanY: { value: 0 }, uScanMode: { value: 0 }, uGlitch: { value: 0 }, uS: { value: 1 },
-    };
-    const mk = (u) => new T.ShaderMaterial({ uniforms: u, vertexShader: VS, fragmentShader: FS, transparent: true, depthWrite: false, depthTest: false, premultipliedAlpha: true });
-    const mat = mk(U);
-    const reflMat = mk(Object.assign({}, U, { uReflect: { value: 1 } }));
-    const mesh = new T.Mesh(geo, mat);
-    mesh.frustumCulled = false;
-    mesh.renderOrder = 3;
-    const refl = new T.Mesh(geo, reflMat);
-    refl.frustumCulled = false;
-    refl.renderOrder = 0;
+  /* -------------------------------------------------------------- cyborg accents */
+  const glowTex = new T.CanvasTexture(glowCanvas(128, "rgba(190,215,255,1)", "rgba(110,140,255,0.35)"));
+  const accents = [];
+  const ringMat = (color, o) => additive(new T.MeshBasicMaterial({ color, transparent: true, opacity: o }));
+  function addGlow(parent, pos, size, strength) {
+    const sp = new T.Sprite(additive(new T.SpriteMaterial({ map: glowTex, color: 0x7f9bff, opacity: strength })));
+    sp.position.set(...pos);
+    sp.scale.setScalar(size);
+    sp.renderOrder = 6;
+    parent.add(sp);
+    accents.push({ mesh: sp, base: strength, kind: "glow" });
+    return sp;
+  }
+  // collar with the chest core
+  const collar = new T.Mesh(new T.TorusGeometry(1, 0.11, 10, 72), ringMat(0x9aa8ff, 0.85));
+  collar.scale.set(LM.collar.rx, LM.collar.ry, 0.14);
+  collar.position.set(...LM.collar.c);
+  collar.rotation.x = LM.collar.tilt;
+  collar.renderOrder = 5;
+  lift.add(collar);
+  accents.push({ mesh: collar, base: 0.85, kind: "ring" });
+  const coreG = new T.Group();
+  coreG.position.set(...LM.core);
+  coreG.rotation.x = 0.42;
+  lift.add(coreG);
+  const coreRing = new T.Mesh(new T.TorusGeometry(0.03, 0.0055, 8, 40), ringMat(0xbfd0ff, 1));
+  const coreDisc = new T.Mesh(new T.CircleGeometry(0.02, 32), ringMat(0xdfe8ff, 0.9));
+  coreRing.renderOrder = coreDisc.renderOrder = 5;
+  coreG.add(coreRing, coreDisc);
+  accents.push({ mesh: coreRing, base: 1, kind: "core" }, { mesh: coreDisc, base: 0.9, kind: "core" });
+  addGlow(coreG, [0, 0, 0.01], 0.13, 0.9);
+  // joint rings
+  for (const [x, y, z, r] of LM.rings) {
     const g = new T.Group();
-    g.add(refl, mesh);
-    g.visible = false;
-    tilt.add(g);
-    const baseX = (D.align[1] - STAND_PIVOT[0]) / UNIT;
-    // horizontal extent and top in world units (relative to the pose group)
-    // padding covers the glow halo, the swinging tail and the pointer tilt (pose px)
-    const pad = D.extPad || [24, 28];
-    const ext = [((bx0 * 4 - pad[0]) - D.align[0]) * sc, ((bx1 * 4 + pad[1]) - D.align[0]) * sc];
-    const top = (D.ground - by0 * 4) * sc;
-    const rig = { name, D, U, group: g, mesh, refl, alphaAt, bones, baseX, shift: 0, s: 1, ext, top };
-    rigs[name] = rig;
-    return rig;
+    g.position.set(x, y, z);
+    g.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
+    const ring = new T.Mesh(new T.TorusGeometry(r, r * 0.16, 8, 36), ringMat(0x8fa2ff, 0.95));
+    const dot = new T.Mesh(new T.CircleGeometry(r * 0.38, 20), ringMat(0xcfdcff, 0.75));
+    ring.renderOrder = dot.renderOrder = 5;
+    g.add(ring, dot);
+    lift.add(g);
+    accents.push({ mesh: ring, base: 0.95, kind: "ring" }, { mesh: dot, base: 0.75, kind: "ring" });
+    addGlow(g, [0, 0, 0.005], r * 3.4, 0.55);
   }
-
-  // pose px -> world (tilt space) for a rig
-  const toWorld = (rig, x, y) => [rig.baseX + rig.shift + ((x - rig.D.align[0]) * rig.D.k * rig.s) / UNIT, ((rig.D.ground - y) * rig.D.k * rig.s) / UNIT];
-  const fromWorld = (rig, wx, wy) => [((wx - rig.baseX - rig.shift) * UNIT) / (rig.D.k * rig.s) + rig.D.align[0], rig.D.ground - (wy * UNIT) / (rig.D.k * rig.s)];
-
-  function ensurePose(name) {
-    if (rigs[name]) return Promise.resolve(rigs[name]);
-    if (!pending[name]) {
-      pending[name] = loadPoseAssets(opts.base, name, opts.hd).then((a) => {
-        const r = buildPose(name, a);
-        placePose(r);
-        return r;
-      });
-      pending[name].catch(() => { delete pending[name]; });
+  // head modules follow the head turn
+  const headG = new T.Group();
+  headG.position.set(...LM.neck);
+  lift.add(headG);
+  for (const [x, y, z] of LM.modules) {
+    const g = new T.Group();
+    g.position.set(x - LM.neck[0], y - LM.neck[1], z - LM.neck[2]);
+    g.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2;
+    const ring = new T.Mesh(new T.TorusGeometry(0.026, 0.006, 8, 32), ringMat(0x9fb0ff, 1));
+    ring.renderOrder = 5;
+    g.add(ring);
+    headG.add(g);
+    accents.push({ mesh: ring, base: 1, kind: "ring" });
+    addGlow(g, [0, 0, 0.004], 0.09, 0.6);
+  }
+  // crystal blade on the tail tip, flat side toward the viewer when he stands in profile
+  const bladeG = new T.Group();
+  bladeG.position.set(...LM.tail.tip);
+  lift.add(bladeG);
+  const bladeDir = new T.Vector3(...LM.tail.dir).normalize();
+  const bladeQ = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 1, 0), bladeDir);
+  const bladeGeo = new T.OctahedronGeometry(1, 0);
+  bladeGeo.scale(0.009, 0.086, 0.032);
+  bladeGeo.translate(0, 0.078, 0);
+  const blade = new T.Mesh(bladeGeo, ringMat(0x4f9dff, 1));
+  const bladeCore = new T.Mesh(bladeGeo, ringMat(0xcfeaff, 0.5));
+  bladeCore.scale.set(1.2, 0.62, 0.42);
+  blade.quaternion.copy(bladeQ);
+  bladeCore.quaternion.copy(bladeQ);
+  blade.renderOrder = bladeCore.renderOrder = 5;
+  bladeG.add(blade, bladeCore);
+  accents.push({ mesh: blade, base: 1, kind: "blade" }, { mesh: bladeCore, base: 0.5, kind: "blade" });
+  addGlow(bladeG, bladeDir.clone().multiplyScalar(0.075).toArray(), 0.2, 0.75);
+  // Kopicat's blue eyes: a soft halo and a bright core on each eye. They blink, and each one
+  // fades as it turns away from the viewer (no depth test, so the glow reads from the side too).
+  const eyeGlows = [];
+  for (const e of LM.eyes) {
+    const n = new T.Vector3(Math.sign(e[0]) * 0.5, 0.05, 0.86).normalize();
+    for (const [size, color, base] of [[0.11, 0x3f9cff, 0.9], [0.034, 0xe6f6ff, 1]]) {
+      const sp = new T.Sprite(additive(new T.SpriteMaterial({ map: glowTex, color, opacity: base, depthTest: false })));
+      sp.position.set(e[0] - LM.neck[0], e[1] - LM.neck[1], e[2] - LM.neck[2] + 0.008);
+      sp.scale.setScalar(size);
+      sp.renderOrder = 6;
+      sp.userData = { base, n };
+      headG.add(sp);
+      eyeGlows.push(sp);
     }
-    return pending[name];
   }
+  // each accent lights up when the build line reaches its height
+  lift.updateMatrixWorld(true);
+  const accentPos = new T.Vector3();
+  for (const a of accents) a.y = a.mesh.getWorldPosition(accentPos).y;
+
+  /* -------------------------------------------------------------- projector base */
+  const base = new T.Group();
+  world.add(base);
+  const R = BASE_R;
+  const profile = [
+    [0, 0], [R * 0.86, 0], [R * 0.875, -0.006], [R * 0.95, -0.006], [R * 0.985, -0.018], [R, -0.04],
+    [R, -0.095], [R * 1.05, -0.115], [R * 1.07, -0.135], [R * 1.07, -0.16], [0, -0.16],
+  ].map(([x, y]) => new T.Vector2(x, y));
+  const baseMat = new T.MeshPhysicalMaterial({ color: 0x07060c, metalness: 0.88, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.18, envMapIntensity: 0.55 });
+  const body = new T.Mesh(new T.LatheGeometry(profile, 128), baseMat);
+  body.renderOrder = 0;
+  base.add(body);
+  const topRing = new T.Mesh(new T.TorusGeometry(R * 0.905, 0.006, 8, 160), additive(new T.MeshBasicMaterial({ color: 0x6f86ff })));
+  topRing.rotation.x = Math.PI / 2; topRing.position.y = -0.003; topRing.renderOrder = 1;
+  const lowRing = new T.Mesh(new T.TorusGeometry(R * 1.072, 0.0045, 8, 180), additive(new T.MeshBasicMaterial({ color: 0xb794ff })));
+  lowRing.rotation.x = Math.PI / 2; lowRing.position.y = -0.125; lowRing.renderOrder = 1;
+  base.add(topRing, lowRing);
+  const discU = { uTime: { value: 0 }, uOn: { value: 0 }, uPulse: { value: 0 } };
+  const disc = new T.Mesh(new T.CircleGeometry(R * 0.86, 96), additive(new T.ShaderMaterial({ uniforms: discU, vertexShader: SIMPLE_VS, fragmentShader: DISC_FS })));
+  disc.rotation.x = -Math.PI / 2; disc.position.y = 0.002; disc.renderOrder = 1;
+  base.add(disc);
+  const beamU = { uTime: { value: 0 }, uOn: { value: 0 } };
+  const beamGeo = new T.CylinderGeometry(R * 0.96, R * 0.86, 1.3, 72, 1, true);
+  beamGeo.translate(0, 0.65, 0);
+  const beam = new T.Mesh(beamGeo, additive(new T.ShaderMaterial({ uniforms: beamU, vertexShader: SIMPLE_VS, fragmentShader: BEAM_FS, side: T.DoubleSide })));
+  beam.renderOrder = 1;
+  base.add(beam);
+  // rising specks inside the beam
+  const NP = coarse ? 70 : 120;
+  const pp = new Float32Array(NP * 3), ps = new Float32Array(NP);
+  for (let i = 0; i < NP; i++) {
+    const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * R * 0.8;
+    pp[i * 3] = Math.cos(a) * r; pp[i * 3 + 1] = Math.random(); pp[i * 3 + 2] = Math.sin(a) * r;
+    ps[i] = Math.random();
+  }
+  const pg = new T.BufferGeometry();
+  pg.setAttribute("position", new T.BufferAttribute(pp, 3));
+  pg.setAttribute("aSeed", new T.BufferAttribute(ps, 1));
+  const ptsU = { uTime: { value: 0 }, uH: { value: 1.25 }, uPx: { value: 30 }, uOn: { value: 0 } };
+  const pts = new T.Points(pg, additive(new T.ShaderMaterial({ uniforms: ptsU, vertexShader: PTS_VS, fragmentShader: PTS_FS })));
+  pts.renderOrder = 1;
+  pts.frustumCulled = false;
+  base.add(pts);
+  // neon city light on the base: magenta from the left, cyan from the right, blue from the emitter
+  const lMag = new T.DirectionalLight(0xff4fd8, 1.4); lMag.position.set(-3, 1.5, 1);
+  const lCyan = new T.DirectionalLight(0x36e2ff, 1.1); lCyan.position.set(3, 1.2, 1.5);
+  const lEmit = new T.PointLight(0x5f7dff, 2.2, 3, 1.6); lEmit.position.set(0, 0.25, 0);
+  scene.add(lMag, lCyan, lEmit);
 
   /* -------------------------------------------------------------- layout */
-  const AVOID = ".hero__title, .hero__lead, .hero__actions, .social-row, .hero__portrait, .meta-strip, .motion-toggle";
-  function placePose(rig) {
-    // keep the whole pose on screen and clear of the hero copy, portrait and facts strip:
-    // slide it sideways first, shrink it a little only when the free space is too narrow
-    const pad = 10;
-    const sr = stage.getBoundingClientRect(), cr = creature.getBoundingClientRect();
-    const gx = sr.left + originX, gy = sr.top + originY;
-    const top = gy - rig.top * anchorH, mid = cr.left + cr.width / 2;
-    let minL = pad, maxR = vw - pad;
-    document.querySelectorAll(AVOID).forEach((el) => {
-      const o = el.getBoundingClientRect();
-      if (!o.width || o.bottom <= top + 4 || o.top >= gy - 2) return;
-      if ((o.left + o.right) / 2 < mid) { if (o.right < mid) minL = Math.max(minL, o.right + 8); }
-      else if (o.left > mid) maxR = Math.min(maxR, o.left - 8);
-    });
-    const w = (rig.ext[1] - rig.ext[0]) * anchorH;
-    const s = clamp((maxR - minL) / w, 0.72, 1);
-    const left = gx + (rig.baseX + rig.ext[0] * s) * anchorH;
-    const right = gx + (rig.baseX + rig.ext[1] * s) * anchorH;
-    let shift = 0;
-    if (right - left > maxR - minL) shift = maxR - right;
-    else if (right > maxR) shift = maxR - right;
-    else if (left < minL) shift = minL - left;
-    rig.s = s;
-    rig.shift = shift / anchorH;
-    rig.group.position.x = rig.baseX + rig.shift;
-    rig.group.scale.set(s, s, 1);
-    rig.U.uS.value = s;
+  let stageW = 1, stageH = 1, vw = window.innerWidth;
+  let hudW = 0, hudH = 0;
+  const tmp = new T.Vector3(), eyeN = new T.Vector3(), eyeV = new T.Vector3(), eyeP = new T.Vector3();
+  function projectStage(x, y, z) {
+    tmp.set(x, y, z).project(camera);
+    return [(tmp.x * 0.5 + 0.5) * stageW, (-tmp.y * 0.5 + 0.5) * stageH];
   }
-
+  function worldToStage(obj, x, y, z) {
+    tmp.set(x, y, z);
+    obj.updateWorldMatrix(true, false);
+    obj.localToWorld(tmp);
+    tmp.project(camera);
+    return [(tmp.x * 0.5 + 0.5) * stageW, (-tmp.y * 0.5 + 0.5) * stageH];
+  }
+  const avoid = Array.from(document.querySelectorAll("[data-cat-avoid]"));
   function layout() {
     const sr = stage.getBoundingClientRect();
     const cr = creature.getBoundingClientRect();
     if (!sr.width || !sr.height || !cr.height) return;
-    stageW = sr.width; stageH = sr.height; anchorH = cr.height;
+    stageW = sr.width; stageH = sr.height;
     vw = document.documentElement.clientWidth || window.innerWidth;
     const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
     renderer.setPixelRatio(dpr);
     renderer.setSize(stageW, stageH, false);
-    const worldH = stageH / anchorH;
-    const dist = worldH / (2 * Math.tan((camera.fov * Math.PI) / 360));
+    // room for the base: the viewport, minus page blocks marked data-cat-avoid that share its rows
+    let cx = cr.left + cr.width * 0.5, lo = 12, hi = vw - 16;
+    const blocks = [];
+    for (const el of avoid) {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      blocks.push(r);
+      if (r.bottom <= cr.top || r.top >= cr.bottom) continue;
+      if (r.right <= cx) lo = Math.max(lo, r.right + 14);
+      else if (r.left >= cx) hi = Math.min(hi, r.left - 14);
+    }
+    // the cat (1 unit tall) is about 0.6 anchor heights tall on screen, a little smaller when the room is tight
+    const reach = BASE_R * 1.1;   // the lower rim, a little wider in perspective
+    const pxPerUnit = clamp((hi - lo) / (2 * reach), cr.height * 0.42, cr.height * 0.6);
+    cx = clamp(cx, lo + reach * pxPerUnit, hi - reach * pxPerUnit);
+    const dist = stageH / (2 * Math.tan((camera.fov * DEG) / 2) * pxPerUnit);
     camera.aspect = stageW / stageH;
-    camera.position.set(0, 0, dist);
-    camera.near = dist * 0.1; camera.far = dist * 4;
+    camera.position.set(0, LOOK_Y + Math.sin(PITCH) * dist, Math.cos(PITCH) * dist);
+    camera.lookAt(0, LOOK_Y, 0);
+    camera.clearViewOffset();
     camera.updateProjectionMatrix();
-    // the stand ground pivot sits at the same spot inside the anchor box
-    originX = cr.left - sr.left + (STAND_PIVOT[0] / STAND_W) * cr.width;
-    originY = cr.top - sr.top + (STAND_PIVOT[1] / STAND_H) * cr.height;
-    group.position.set((originX - stageW / 2) / anchorH, (stageH / 2 - originY) / anchorH, 0);
-    for (const k in rigs) placePose(rigs[k]);
+    camera.updateMatrixWorld();
+    // shift the view so the front rim of the base rests on the anchor's bottom edge
+    const have = projectStage(0, 0, 0);
+    const low = projectStage(0, -0.16, BASE_R * 1.07);
+    const want = [cx - sr.left, cr.top - sr.top + cr.height - (low[1] - have[1])];
+    camera.setViewOffset(stageW, stageH, have[0] - want[0], have[1] - want[1], stageW, stageH);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+    ptsU.uPx.value = (stageH / 2 / Math.tan((camera.fov * DEG) / 2)) * 0.026;
+    hudW = 0;
+    placeHint(sr, cr, blocks);
     requestRender();
   }
 
-  // world (tilt space) -> stage px
-  const tmpV = new T.Vector3();
-  function worldToStage(wx, wy, z) {
-    tmpV.set(wx, wy, z || 0);
-    tilt.updateWorldMatrix(true, false);
-    tilt.localToWorld(tmpV);
-    tmpV.project(camera);
-    return [(tmpV.x * 0.5 + 0.5) * stageW, (-tmpV.y * 0.5 + 0.5) * stageH];
-  }
-  function poseToStage(rig, x, y, z) {
-    const [wx, wy] = toWorld(rig, x, y);
-    return worldToStage(wx, wy, z);
+  // "pet me" hint beside the base: the first spot that stays on screen and clear of the page blocks
+  function placeHint(sr, cr, blocks) {
+    if (!hint) return;
+    const hw = hint.offsetWidth || 90, hh = hint.offsetHeight || 30;
+    const [lx, ly] = projectStage(-BASE_R * 1.02, 0.08, 0);
+    const [rx, ry] = projectStage(BASE_R * 1.02, 0.08, 0);
+    const spots = [
+      [lx - hw - 10, ly - hh / 2], [rx + 10, ry - hh / 2],
+      [lx - hw - 4, ly - hh * 2], [rx + 4, ry - hh * 2],
+      [lx - hw, ly - hh * 3.6], [rx, ry - hh * 3.6],
+    ];
+    let pick = null;
+    for (const [sx, sy] of spots) {
+      const x = clamp(sr.left + sx, 8, vw - hw - 8), y = sr.top + sy;
+      if (Math.abs(x - (sr.left + sx)) > hw * 0.25) continue;
+      if (blocks.some((r) => x < r.right + 6 && r.left - 6 < x + hw && y < r.bottom + 6 && r.top - 6 < y + hh)) continue;
+      pick = [x, y];
+      break;
+    }
+    // no room beside the base (small screens): a label centered on the base's front rim
+    if (!pick) {
+      const [fx, fy] = projectStage(0, -0.16, BASE_R * 1.07);
+      pick = [clamp(sr.left + fx - hw / 2, 8, vw - hw - 8), sr.top + fy - hh - 2];
+    }
+    hint.style.transform = `translate(${(pick[0] - cr.left).toFixed(1)}px, ${(pick[1] - cr.top).toFixed(1)}px)`;
   }
 
   /* -------------------------------------------------------------- state */
+  const now0 = performance.now();
   const S = {
     time: 0, last: 0, running: false, rafId: 0, visible: true, ready: false,
-    pointer: { x: 0, y: 0, nx: 0, ny: 0, active: false },
-    look: new T.Vector2(), lookT: new T.Vector2(),
-    yaw: 0, pitch: 0, dragYaw: 0, dragVel: 0, dragging: false, dragStartX: 0, dragLastX: 0, downAt: 0, downOnCat: false, moved: false, releaseAt: 0,
-    hover: 0, hoverT: 0,
-    blinkStart: -1e9, nextBlink: performance.now() + rand(1800, 3500), happy: 0, force: null,
-    ear: [0, 0], earT: [0, 0], nextEar: performance.now() + rand(3500, 7000),
-    idleLookUntil: 0, nextIdleLook: performance.now() + rand(7000, 12000), idleLookX: -1,
-    tailFlick: 0, nextFlick: performance.now() + rand(6000, 11000),
+    pointer: { x: 0, y: 0, active: false, at: 0 },
+    yaw: -52 * DEG, idleIdx: 0, idleUntil: now0 + IDLE[0][1], idleTarget: -52 * DEG, spinning: null,
+    dragging: false, dragX: 0, dragLast: 0, dragT: 0, dragVel: 0, releaseAt: 0, downAt: 0, downOnCat: false, moved: false,
+    manualUntil: 0, manualTarget: null,
+    headYaw: 0, headPitch: 0, hover: 0, hoverT: 0,
+    blinkEnd: 0, nextBlink: now0 + rand(2500, 4500),
+    ear: [0, 0], earT: [0, 0], nextEar: now0 + rand(2500, 6000),
+    flick: 0, nextFlick: now0 + rand(5000, 9000),
+    glitchEnd: 0, nextGlitch: now0 + rand(5000, 9000),
     pets: 0, lastPet: 0, purrUntil: 0, hopT: -1, moodTimer: 0,
-    sweep: -1, nextSweep: performance.now() + 2500,
-    pose: "stand", from: null, trans: null, queued: null, poseUntil: 0, nextFront: rand(20, 35), poseTimer: 0,
+    build: 0, buildStart: 0, scan: -1, nextScan: now0 + 1800,
   };
   const reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
   const motionOK = () => !reduceMQ.matches && !root.classList.contains("motion-paused");
-  const cur = () => rigs[S.pose];
 
   /* -------------------------------------------------------------- sound */
   const purrSound = (() => {
@@ -943,7 +833,6 @@ function createApp(standAssets, opts) {
       play, stop, setMuted,
       get muted() { return muted; },
       get state() { return ctx ? ctx.state : "none"; },
-      get level() { return env ? env.gain.value : 0; },
       get playing() { return !!src; },
     };
   })();
@@ -960,8 +849,8 @@ function createApp(standAssets, opts) {
   /* -------------------------------------------------------------- effects */
   const heartSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>';
   function burst(count, hearts) {
-    if (!motionOK() || !cur()) return;
-    const [cx, cy] = poseToStage(cur(), cur().D.fx[0], cur().D.fx[1], 0.06);
+    if (!motionOK()) return;
+    const [cx, cy] = worldToStage(headG, 0, 0.12, 0.2);
     for (let i = 0; i < count; i++) {
       const isHeart = i < hearts;
       const el = makeEl("span", isHeart ? "kopi-heart" : "kopi-spark" + (i % 2 ? " kopi-spark--violet" : ""));
@@ -979,16 +868,16 @@ function createApp(standAssets, opts) {
       anim.onfinish = () => el.remove();
     }
   }
-
-  function restLabel() {
-    if (performance.now() < S.purrUntil) return;
-    const l = POSE_LABEL[S.pose];
-    tag.textContent = l || DEFAULT_LABEL;
-    tag.classList.toggle("is-mood", false);
-  }
   function setLabel(text, mood) {
     tag.textContent = text;
     tag.classList.toggle("is-mood", !!mood);
+  }
+  function glitch(ms) {
+    S.glitchEnd = performance.now() + ms;
+    U.uGlitchSeed.value = Math.random() * 100;
+    hud.classList.remove("is-glitch");
+    void hud.offsetWidth;
+    hud.classList.add("is-glitch");
   }
 
   function pet() {
@@ -998,111 +887,35 @@ function createApp(standAssets, opts) {
     S.purrUntil = now + PURR_MS + Math.min(S.pets - 1, 3) * 400;
     creature.classList.add("was-petted", "is-purring");
     setLabel(MOODS[Math.min(S.pets, MOODS.length) - 1], true);
-    let msg = S.pets === 1 ? NAME + " purrs." : NAME + " purrs happily (" + S.pets + " pets).";
-    // three quick pets: he sits down to purr, and stays a while longer with every extra pet
-    if (S.pets >= 3) {
-      if (S.pose !== "sit" && S.queued !== "sit") { setPose("sit"); msg = NAME + " sits down and purrs."; }
-      S.poseUntil = Math.max(S.poseUntil, now + (S.pets === 3 ? rand(8000, 10000) : 5000));
-      schedulePoseTick();
-    }
-    if (status) status.textContent = msg;
+    if (status) status.textContent = S.pets === 1 ? NAME + " purrs." : NAME + " purrs happily (" + S.pets + " pets).";
     clearTimeout(S.moodTimer);
     S.moodTimer = setTimeout(() => {
       creature.classList.remove("is-purring");
-      restLabel();
+      setLabel(DEFAULT_LABEL, false);
       requestRender();
     }, S.purrUntil - now);
     purrSound.play((S.purrUntil - now) / 1000, S.pets);
     if (coarse && !purrSound.muted && navigator.vibrate) { try { navigator.vibrate(12); } catch (e) { /* ignore */ } }
     burst(6 + S.pets * 3, S.pets >= 2 ? 2 + Math.min(S.pets, 4) : 1);
-    if (S.pets >= 5 && motionOK() && !S.trans) S.hopT = 0;
-    start();
+    if (motionOK()) {
+      glitch(160);
+      if (S.pets === 3) S.spinning = { from: S.yaw, to: S.yaw + TAU, t0: now, dur: 1300 };
+      else if (S.pets >= 4) S.hopT = 0;
+      start();
+    }
     requestRender();
-  }
-
-  /* -------------------------------------------------------------- poses */
-  let glitchTimer = 0;
-  function setPose(name, o) {
-    if (!POSES[name]) return Promise.resolve(false);
-    const hold = o && typeof o.hold === "number" ? clamp(o.hold, 0, 1) : null;
-    if (S.trans) {
-      if (hold !== null && S.pose === name) { S.trans.hold = hold; requestRender(); return Promise.resolve(true); }
-      S.queued = name;
-      return Promise.resolve(true);
-    }
-    if (name === S.pose) { S.queued = null; return Promise.resolve(true); }
-    S.queued = name;
-    return ensurePose(name).then((rig) => {
-      if (S.queued !== name || S.trans) return false;
-      S.queued = null;
-      const prev = rigs[S.pose];
-      S.from = S.pose;
-      S.pose = name;
-      creature.classList.toggle("is-sitting", name === "sit");
-      rig.group.visible = true;
-      placePose(rig);
-      if (motionOK()) {
-        S.trans = { t0: performance.now(), hold, prev };
-        hud.classList.add("is-glitch");
-        clearTimeout(glitchTimer);
-        glitchTimer = setTimeout(() => hud.classList.remove("is-glitch"), TRANS_MS);
-        start();
-      } else {
-        if (prev) prev.group.visible = false;
-        S.from = null;
-      }
-      if (name === "stand") S.nextFront = S.time + rand(20, 35);
-      else schedulePoseTick();
-      restLabel();
-      requestRender();
-      return true;
-    }).catch(() => { S.queued = null; return false; });
-  }
-
-  function endTransition() {
-    const t = S.trans;
-    S.trans = null;
-    if (t && t.prev && t.prev !== rigs[S.pose]) t.prev.group.visible = false;
-    S.from = null;
-    for (const k in rigs) { rigs[k].U.uScanMode.value = 0; rigs[k].U.uGlitch.value = 0; }
-    beam.visible = false; ring.visible = false;
-    if (S.queued && S.queued !== S.pose) { const q = S.queued; S.queued = null; setPose(q); }
-  }
-
-  function schedulePoseTick() {
-    clearTimeout(S.poseTimer);
-    if (S.pose === "stand") return;
-    const ms = Math.max(50, S.poseUntil - performance.now() + 30);
-    S.poseTimer = setTimeout(() => { poseTick(performance.now()); requestRender(); }, ms);
-  }
-  function poseTick(now) {
-    if (S.trans || S.queued) return;
-    if (S.pose !== "stand" && S.poseUntil && now > S.poseUntil && !S.dragging) {
-      S.poseUntil = 0;
-      setPose("stand");
-    }
   }
 
   /* -------------------------------------------------------------- input */
   const ray = new T.Raycaster();
   const ndc = new T.Vector2();
-  const plane = new T.Plane();
-  const hit = new T.Vector3();
-  const inv = new T.Matrix4();
-  function catPixelAt(clientX, clientY) {
-    const rig = cur();
-    if (!rig) return null;
+  function hitTest(clientX, clientY) {
     const sr = stage.getBoundingClientRect();
-    if (clientX < sr.left || clientX > sr.right || clientY < sr.top || clientY > sr.bottom) return null;
+    if (clientX < sr.left || clientX > sr.right || clientY < sr.top || clientY > sr.bottom) return false;
     ndc.set(((clientX - sr.left) / sr.width) * 2 - 1, -((clientY - sr.top) / sr.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
-    tilt.updateMatrixWorld();
-    plane.setFromNormalAndCoplanarPoint(new T.Vector3(0, 0, 1).transformDirection(tilt.matrixWorld), new T.Vector3().setFromMatrixPosition(tilt.matrixWorld));
-    if (!ray.ray.intersectPlane(plane, hit)) return null;
-    inv.copy(tilt.matrixWorld).invert();
-    hit.applyMatrix4(inv);
-    const [x, y] = fromWorld(rig, hit.x, hit.y);
-    return { x, y, a: rig.alphaAt(x, y) };
+    world.updateMatrixWorld(true);
+    return ray.intersectObjects([catFront, body], false).length > 0;
   }
   function setCursor(mode) {
     root.classList.toggle("cat3d-grab", mode === "grab");
@@ -1111,16 +924,17 @@ function createApp(standAssets, opts) {
   let moveQueued = false, lastMove = null;
   function onMove(e) {
     lastMove = e;
-    S.pointer.nx = (e.clientX / window.innerWidth) * 2 - 1;
-    S.pointer.ny = (e.clientY / window.innerHeight) * 2 - 1;
-    S.pointer.x = e.clientX; S.pointer.y = e.clientY; S.pointer.active = true;
+    S.pointer.x = e.clientX; S.pointer.y = e.clientY; S.pointer.active = true; S.pointer.at = performance.now();
     if (S.dragging && e.pointerType !== "touch") {
-      const dx = e.clientX - S.dragLastX;
-      S.dragLastX = e.clientX;
-      if (Math.abs(e.clientX - S.dragStartX) > 6) S.moved = true;
-      S.dragYaw = clamp(S.dragYaw + dx * 0.006, -0.42, 0.42);
-      S.dragVel = dx * 0.006;
-    } else if (Math.abs(e.clientX - S.dragStartX) > 8) {
+      const dx = e.clientX - S.dragLast;
+      S.dragLast = e.clientX;
+      if (Math.abs(e.clientX - S.dragX) > 6) S.moved = true;
+      const t = performance.now(), step = Math.max(0.008, (t - S.dragT) / 1000);
+      S.dragT = t;
+      S.yaw += dx * 0.012;
+      S.dragVel = clamp(lerp(S.dragVel, (dx * 0.012) / step, 0.5), -7, 7);   // radians per second
+      if (!motionOK()) requestRender();
+    } else if (Math.abs(e.clientX - S.dragX) > 8) {
       S.moved = true;
     }
     if (!moveQueued) {
@@ -1128,25 +942,25 @@ function createApp(standAssets, opts) {
       requestAnimationFrame(() => {
         moveQueued = false;
         if (!lastMove || S.dragging) return;
-        const p = catPixelAt(lastMove.clientX, lastMove.clientY);
-        const over = !!p && p.a > 0.35;
+        const over = hitTest(lastMove.clientX, lastMove.clientY);
         S.hoverT = over ? 1 : 0;
         if (lastMove.pointerType !== "touch") setCursor(over ? "grab" : "");
       });
     }
-    if (!motionOK()) { if (S.dragging) requestRender(); return; }
-    start();
+    if (motionOK()) start();
   }
   function onDown(e) {
     if (e.button !== undefined && e.button !== 0) return;
-    const p = catPixelAt(e.clientX, e.clientY);
-    S.downOnCat = !!p && p.a > 0.35;
+    S.downOnCat = hitTest(e.clientX, e.clientY);
     if (!S.downOnCat) return;
     S.downAt = performance.now();
-    S.dragStartX = S.dragLastX = e.clientX;
+    S.dragX = S.dragLast = e.clientX;
+    S.dragT = S.downAt;
+    S.dragVel = 0;
     S.moved = false;
     if (e.pointerType !== "touch") {
       S.dragging = true;
+      S.spinning = null;
       setCursor("grabbing");
     }
   }
@@ -1155,11 +969,14 @@ function createApp(standAssets, opts) {
     S.downOnCat = false;
     if (S.dragging) {
       S.dragging = false;
-      const p = catPixelAt(e.clientX, e.clientY);
-      setCursor(p && p.a > 0.35 ? "grab" : "");
+      S.releaseAt = performance.now();
+      if (S.releaseAt - S.dragT > 90) S.dragVel = 0;   // the pointer stopped before letting go
+      S.manualUntil = S.releaseAt + 5000;   // he stays where he was left for a moment
+      S.manualTarget = null;
+      setCursor(hitTest(e.clientX, e.clientY) ? "grab" : "");
     }
     if (wasOnCat && !S.moved && performance.now() - S.downAt < 700) pet();
-    start();
+    if (motionOK()) start();
   }
   window.addEventListener("pointermove", onMove, { passive: true });
   window.addEventListener("pointerdown", onDown, { passive: true });
@@ -1167,17 +984,20 @@ function createApp(standAssets, opts) {
   window.addEventListener("pointercancel", () => { S.dragging = false; S.downOnCat = false; setCursor(""); }, { passive: true });
   document.addEventListener("pointerleave", () => { S.pointer.active = false; S.hoverT = 0; setCursor(""); });
   if (petBtn) {
-    petBtn.setAttribute("aria-label", "Pet " + NAME + ", the robot cat");
+    petBtn.setAttribute("aria-label", "Pet " + NAME + ", the hologram cat");
     petBtn.addEventListener("click", (e) => { e.preventDefault(); pet(); });
     petBtn.addEventListener("focus", () => { S.hoverT = 1; hud.classList.add("is-on"); requestRender(); });
     petBtn.addEventListener("blur", () => { S.hoverT = 0; requestRender(); });
     petBtn.addEventListener("keydown", (e) => {
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        S.dragYaw = clamp(S.dragYaw + (e.key === "ArrowLeft" ? -0.12 : 0.12), -0.42, 0.42);
+        const now = performance.now();
+        const from = now < S.manualUntil && S.manualTarget !== null ? S.manualTarget : S.yaw;
+        S.spinning = null;
         S.dragVel = 0;
-        S.releaseAt = performance.now();
-        start();
+        S.manualTarget = from + (e.key === "ArrowLeft" ? -0.5 : 0.5);
+        S.manualUntil = now + 6000;
+        if (motionOK()) start();
         requestRender();
       }
     });
@@ -1209,208 +1029,150 @@ function createApp(standAssets, opts) {
     S.rafId = requestAnimationFrame(frame);
   }
 
-  // eyelid frame weights from a lid closure (0 open, 1 shut) and the happy squint amount
-  function lidWeights(lid, happy) {
-    const half = Math.max(clamp(lid * 2, 0, 1), clamp(happy / 0.35, 0, 1) * (1 - clamp((happy - 0.7) / 0.3, 0, 1)));
-    const closed = clamp(lid * 2 - 1, 0, 1);
-    const hp = clamp((happy - 0.35) / 0.5, 0, 1);
-    return [half, closed, hp];
-  }
-
-  function animateTail(rig, t, amp, flick, quiver, bias) {
-    const B = rig.bones;
-    if (!B) return;
-    let theta = 0, px = B.rest[0].x, py = B.rest[0].y;
-    for (let i = 0; i < B.n; i++) {
-      const f = B.swing[i];
-      let d = f * (amp * Math.sin(t * 1.7 - i * 0.55) + bias + flick * Math.sin(t * 5.6 - i * 0.9));
-      if (i === B.n - 1) d += f * quiver * Math.sin(t * 19);
-      if (i === B.rigid) d = -0.35 * (amp * Math.sin(t * 1.7 - (i - 1) * 0.55 - 0.6) + flick * Math.sin(t * 5.6 - i * 0.9 - 0.8)) * f * 3;
-      theta += d;
-      B.pos[i].set(px, py);
-      B.rot[i] = theta;
-      const dx = B.rest[i + 1].x - B.rest[i].x, dy = B.rest[i + 1].y - B.rest[i].y;
-      const c = Math.cos(theta), s = Math.sin(theta);
-      px += c * dx - s * dy;
-      py += s * dx + c * dy;
-    }
-  }
-
-  const SHARED = ["uTime", "uHeadRot", "uBreath", "uEyeBoost", "uGlowAmt", "uSweep", "uCorePulse"];
   function update(dt, now) {
     const moving = motionOK() && dt > 0;
+    const still = !motionOK();
     const purring = now < S.purrUntil;
     if (moving) S.time += dt;
     const t = S.time;
-    const rig = cur();
-    if (!rig) return;
-    const D = rig.D;
+    U.uTime.value = t;
+    U.uStatic.value = still ? 1 : 0;
+    discU.uTime.value = beamU.uTime.value = ptsU.uTime.value = t;
 
-    // pose timeline: a look at the visitor now and then, stand back up after sitting
-    if (moving && !S.trans && !S.queued) {
-      if (S.pose === "stand" && S.time > S.nextFront) {
-        if (!purring && !S.dragging && S.hover < 0.5) { setPose("front"); S.poseUntil = now + rand(3500, 5200); schedulePoseTick(); }
-        else S.nextFront = S.time + 4;
+    // materialize: the beam powers on, then the cat builds up from the base
+    if (still) S.build = 1.06;
+    else if (S.build < 1.06) {
+      if (!S.buildStart) S.buildStart = now;
+      const k = (now - S.buildStart - 350) / 1500;
+      S.build = k <= 0 ? 0 : Math.min(1.06, k * 1.06);
+    }
+    U.uBuild.value = S.build;
+    const on = still ? 1 : clamp((now - (S.buildStart || now)) / 350, 0, 1);
+    beamU.uOn.value = discU.uOn.value = ptsU.uOn.value = on;
+
+    // turntable: idle program, drag with inertia, turns by the visitor, celebratory spin
+    if (still) S.spinning = null;
+    if (!S.dragging) {
+      if (S.spinning) {
+        const k = clamp((now - S.spinning.t0) / S.spinning.dur, 0, 1);
+        const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+        S.yaw = lerp(S.spinning.from, S.spinning.to, e);
+        if (k >= 1) { S.yaw = wrapPi(S.yaw); S.spinning = null; S.idleUntil = now + 2500; }
+      } else if (moving && now - S.releaseAt < 1200) {
+        S.yaw += S.dragVel * dt; S.dragVel *= Math.exp(-5 * dt);
+      } else if (moving) {
+        const manual = now < S.manualUntil;
+        if (!manual) S.manualTarget = null;
+        if (!manual && now > S.idleUntil && now - S.releaseAt > 2600) {
+          S.idleIdx = (S.idleIdx + 1) % IDLE.length;
+          const step = IDLE[S.idleIdx];
+          if (step[0] === "spin") {
+            S.spinning = { from: S.yaw, to: S.yaw + TAU, t0: now, dur: 7000 };
+            S.idleUntil = now + 7000;
+          } else {
+            S.idleTarget = step[0] * DEG;
+            S.idleUntil = now + step[1] + 1200;
+          }
+        }
+        if (manual) {
+          // the visitor turned him: ease to the angle they asked for and hold it for a moment
+          if (S.manualTarget !== null) S.yaw += wrapPi(S.manualTarget - S.yaw) * (1 - Math.exp(-7 * dt));
+        } else {
+          // a hovering visitor gets looked at
+          const target = S.hover > 0.5 ? -24 * DEG : S.idleTarget;
+          S.yaw += wrapPi(target - S.yaw) * (1 - Math.exp(-1.6 * dt));
+        }
+      } else if (still && S.manualTarget !== null) {
+        S.yaw = S.manualTarget;
       }
-      poseTick(now);
     }
+    spin.rotation.y = S.yaw;
 
-    // hover and pointer tracking
+    // head follows the pointer, otherwise looks around now and then
     S.hover = moving ? damp(S.hover, S.hoverT, 8, dt) : S.hoverT;
-    let lookX = 0, lookY = 0, yawT = 0, pitchT = 0;
-    if (S.pointer.active) {
-      const ex = D.eyeR ? (D.eyeL[0] + D.eyeR[0]) / 2 : D.eyeL[0], ey = D.eyeR ? (D.eyeL[1] + D.eyeR[1]) / 2 : D.eyeL[1];
-      const [sx, sy] = poseToStage(rig, ex, ey, 0.05);
+    U.uHover.value = S.hover;
+    let hy = Math.sin(t * 0.31) * 0.12, hp = Math.sin(t * 0.23 + 1.3) * 0.05;
+    if (S.pointer.active && now - S.pointer.at < 4000) {
       const sr = stage.getBoundingClientRect();
-      const dx = S.pointer.x - (sr.left + sx), dy = S.pointer.y - (sr.top + sy);
-      lookX = clamp(dx / 260, -1, 1);
-      lookY = clamp(dy / 220, -1, 1);
-      yawT = clamp(S.pointer.nx * 0.12, -0.12, 0.12);
-      pitchT = clamp(S.pointer.ny * 0.05, -0.05, 0.05);
+      const [ex, ey] = worldToStage(headG, 0, 0.05, 0.25);
+      const dx = S.pointer.x - (sr.left + ex), dy = S.pointer.y - (sr.top + ey);
+      const face = clamp(dx / 520, -1, 1) * 0.95;          // where on screen he wants to look
+      hy = clamp(wrapPi(face - S.yaw), -0.62, 0.62);
+      hp = clamp(dy / 420, -1, 1) * 0.22;
     }
-    if (now < S.idleLookUntil && S.pose === "stand") { lookX = S.idleLookX; lookY = 0.1; }
-    if (moving && now > S.nextIdleLook) {
-      S.idleLookX = Math.random() < 0.6 ? -1 : 0.7;
-      S.idleLookUntil = now + rand(1200, 2200);
-      S.nextIdleLook = now + rand(9000, 15000);
-    }
-    S.lookT.set(lookX, lookY);
-    if (moving) { S.look.x = damp(S.look.x, S.lookT.x, 6, dt); S.look.y = damp(S.look.y, S.lookT.y, 6, dt); }
-    else S.look.copy(S.lookT);
+    if (purring) { hy *= 0.4; hp = -0.08 + Math.sin(t * 2.4) * 0.04; }
+    S.headYaw = moving ? damp(S.headYaw, hy, 4.5, dt) : (still ? 0 : hy);
+    S.headPitch = moving ? damp(S.headPitch, hp, 4.5, dt) : (still ? 0 : hp);
+    U.uHead.value.set(S.headYaw, S.headPitch);
+    headG.rotation.set(S.headPitch, S.headYaw, 0, "YXZ");
 
-    // head follows the gaze a little, tilts into the pointer while purring
-    const headT = -S.look.x * 0.045 + S.look.y * 0.012 + (purring ? Math.sin(t * 2.2) * 0.02 - 0.035 : 0) + Math.sin(t * 0.37) * 0.012;
-    const headRot = moving ? damp(rig.U.uHeadRot.value, headT, 5, dt) : headT;
-
-    // eyelids: open, half, shut, half, open over BLINK_MS, the happy squint while purring
-    if (moving && now > S.nextBlink && !purring && !S.trans) {
-      S.blinkStart = now;
-      S.nextBlink = now + (Math.random() < 0.18 ? 280 : rand(2600, 6200));
+    // blinks (eyes dim briefly), happy dim while purring
+    if (moving && now > S.nextBlink) {
+      S.blinkEnd = now + 140;
+      S.nextBlink = now + (Math.random() < 0.2 ? 280 : rand(2600, 5600));
     }
-    const bt = (now - S.blinkStart) / BLINK_MS;
-    let lid = 0;
-    if (moving && bt >= 0 && bt < 1) lid = bt < 0.4 ? bt / 0.4 : bt < 0.55 ? 1 : 1 - (bt - 0.55) / 0.45;
-    const happyT = purring ? 1 : 0;
-    S.happy = moving ? damp(S.happy, happyT, happyT > S.happy ? 9 : 6, dt) : happyT;
-    let lw = lidWeights(lid, S.happy);
-    if (S.force && now < S.force.until) {
-      const f = S.force.frame;
-      lw = f === "half" ? [1, 0, 0] : f === "closed" ? [1, 1, 0] : f === "happy" ? [0, 0, 1] : [0, 0, 0];
+    let eye = now < S.blinkEnd ? 0.05 : 1;
+    if (purring) eye = 0.35;
+    U.uEye.value = eye * (1 + S.hover * 0.35);
+    headG.updateWorldMatrix(true, false);
+    for (const sp of eyeGlows) {
+      eyeN.copy(sp.userData.n).transformDirection(headG.matrixWorld);
+      eyeV.copy(camera.position).sub(sp.getWorldPosition(eyeP)).normalize();
+      sp.material.opacity = sp.userData.base * eye * sstep(-0.2, 0.35, eyeN.dot(eyeV)) * sstep(0.52, 0.6, S.build) * (1 + S.hover * 0.4);
     }
-    const eyeBoost = 0.32 + S.hover * 0.55 + (purring ? 0.1 : 0);
 
-    // ears
+    // ear flicks
     if (moving && now > S.nextEar) {
       const which = Math.random() < 0.5 ? 0 : 1;
-      S.earT[which] = (which ? 1 : -1) * rand(0.1, 0.18);
-      setTimeout(() => { S.earT[which] = 0; }, rand(140, 260));
-      S.nextEar = now + rand(3500, 8500);
+      S.earT[which] = (which ? -1 : 1) * rand(0.18, 0.3);
+      setTimeout(() => { S.earT[which] = 0; }, rand(130, 240));
+      S.nextEar = now + rand(3000, 7500);
     }
-    const perk = S.hover * 0.05;
-    for (let i = 0; i < 2; i++) S.ear[i] = moving ? damp(S.ear[i], S.earT[i] + (i ? perk : -perk), 18, dt) : 0;
+    for (let i = 0; i < 2; i++) S.ear[i] = moving ? damp(S.ear[i], S.earT[i] + (i ? -1 : 1) * S.hover * 0.08, 18, dt) : 0;
+    U.uEarL.value.w = S.ear[0];
+    U.uEarR.value.w = S.ear[1];
 
-    // tail: a slow travelling wave down the bones, an occasional flick, a quiver while purring
-    if (moving && now > S.nextFlick) { S.tailFlick = 1; S.nextFlick = now + rand(6000, 12000); }
-    S.tailFlick = moving ? damp(S.tailFlick, 0, 1.4, dt) : 0;
-    const tailAmp = moving ? 0.011 + S.hover * 0.004 : 0;
-    const tailFlick = moving ? S.tailFlick * 0.022 : 0;
-    const tailQuiver = moving && purring ? 0.004 : 0;
-    const tailBias = moving ? Math.sin(t * 0.43) * 0.004 : 0;
+    // tail
+    if (moving && now > S.nextFlick) { S.flick = 1; S.nextFlick = now + rand(5500, 11000); }
+    S.flick = moving ? damp(S.flick, 0, 1.4, dt) : 0;
+    U.uTailAmp.value = moving ? 0.026 + S.flick * 0.03 + S.hover * 0.01 : 0;
+    U.uTailQuiver.value = moving && purring ? 0.006 : 0;
+    U.uTailBias.value = moving ? Math.sin(t * 0.43) * 0.012 : 0;
+    const sTip = clamp((LM.tail.tip[1] - 0.58) / 0.42, 0, 1);
+    bladeG.position.x = LM.tail.tip[0] + (Math.sin(t * 1.6 - sTip * 3) * U.uTailAmp.value + Math.sin(t * 21 - sTip * 7) * U.uTailQuiver.value + U.uTailBias.value) * Math.pow(sTip, 1.3);
 
     // breathing and purr
-    const breathRate = purring ? 0.62 : 0.22;
-    const breath = moving ? Math.sin(t * TAU * breathRate) * (purring ? 0.016 : 0.011) : 0;
-    const jx = moving && purring ? rand(-1.1, 1.1) : 0, jy = moving && purring ? rand(-0.9, 0.9) : 0;
-    const corePulse = purring ? 0.5 + 0.5 * Math.sin(t * 9) : 0.15 + 0.15 * Math.sin(t * 2.1);
+    U.uBreath.value = moving ? Math.sin(t * TAU * (purring ? 0.6 : 0.22)) * (purring ? 0.014 : 0.01) : 0;
+    if (moving && purring) U.uJitter.value.set(rand(-0.0016, 0.0016), rand(-0.0012, 0.0012));
+    else U.uJitter.value.set(0, 0);
+    const pulse = purring ? 0.5 + 0.5 * Math.sin(t * 9) : 0;
+    U.uPulse.value = pulse * 0.6;
+    discU.uPulse.value = pulse;
 
-    // light sweep across the armor
-    if (moving && now > S.nextSweep) { S.sweep = -0.2; S.nextSweep = now + rand(4200, 6500); }
-    if (moving && S.sweep < 1.6) S.sweep += dt * 0.85;
+    // hologram life: scan sweeps, flicker, the odd glitch
+    if (moving && now > S.nextScan) { S.scan = -0.1; S.nextScan = now + rand(3200, 5200); }
+    if (moving && S.scan < 1.4) S.scan += dt * 0.7;
+    U.uScan.value = moving ? S.scan : -1;
+    if (moving && now > S.nextGlitch) { glitch(rand(90, 170)); S.nextGlitch = now + rand(6000, 12000); }
+    U.uGlitch.value = moving && now < S.glitchEnd ? 1 : 0;
+    U.uFlicker.value = moving ? 0.94 + 0.06 * Math.sin(t * 61) * Math.sin(t * 17.3) : 1;
 
-    // pose change: a scan line rises from the paws, the new pose solid below it, the old above it
-    let scanY = 0, glitch = 0, prog = 1;
-    const tr = S.trans;
-    if (tr) {
-      prog = tr.hold !== null && tr.hold !== undefined ? tr.hold : clamp((now - tr.t0) / TRANS_MS, 0, 1);
-      if (!moving && tr.hold === null) prog = 1;
+    // accents pulse gently, the chest core beats with the purr
+    for (const a of accents) {
+      const k = a.kind === "core" ? 0.75 + 0.25 * Math.sin(t * (purring ? 9 : 2.2)) : 0.85 + 0.15 * Math.sin(t * 1.7 + a.base * 9);
+      a.mesh.material.opacity = a.base * (moving ? k : 0.95) * sstep(a.y - 0.02, a.y + 0.06, S.build);
     }
-    const prev = tr ? tr.prev : null;
-    if (tr) {
-      const top = Math.max(rig.top * rig.s, prev ? prev.top * prev.s : 0) * UNIT;
-      scanY = lerp(-50, top + 60, easeInOut(prog));
-      glitch = 0.9 * (1 - sstep(0, 0.16, prog)) + 0.75 * sstep(0.82, 0.97, prog) * (1 - sstep(0.97, 1, prog));
-      glitch *= 0.65 + 0.35 * Math.random();
-    }
-
-    const active = [rig];
-    if (prev && prev !== rig) active.push(prev);
-    for (const r of active) {
-      const u = r.U;
-      u.uTime.value = t;
-      u.uLook.value.copy(S.look);
-      u.uHeadRot.value = headRot;
-      u.uHeadShift.value.set(S.look.x * 3.2, S.look.y * 2.0 + Math.sin(t * 1.38) * 1.2);
-      u.uLidW.value.set(lw[0], lw[1], lw[2]);
-      u.uEyeBoost.value = eyeBoost;
-      u.uEarRot.value.set(S.ear[0], S.ear[1]);
-      u.uBreath.value = breath;
-      u.uJitter.value.set(jx, jy);
-      u.uCorePulse.value = corePulse;
-      u.uSweep.value = moving ? S.sweep : -1;
-      u.uGlowAmt.value = 1 + S.hover * 0.25 + (tr ? 0.5 * Math.sin(Math.PI * prog) : 0);
-      animateTail(r, t, tailAmp, tailFlick, tailQuiver, tailBias);
-      u.uScanY.value = scanY;
-      u.uScanMode.value = tr ? (r === rig ? 1 : -1) : 0;
-      u.uGlitch.value = glitch;
-    }
-
-    // shadow, beam and ring follow the pose (and blend between poses mid-change)
-    const ease = tr ? easeInOut(prog) : 1;
-    const shadowOf = (r) => { const [a] = toWorld(r, r.D.shadow[0], 0), [b] = toWorld(r, r.D.shadow[1], 0); return [(a + b) / 2, b - a]; };
-    const s1 = shadowOf(rig), s0 = prev ? shadowOf(prev) : s1;
-    shadow.position.x = lerp(s0[0], s1[0], ease);
-    shadow.scale.x = lerp(s0[1], s1[1], ease) * 1.05;
-    if (tr) {
-      const ex0 = Math.min(rig.group.position.x + rig.ext[0] * rig.s, prev ? prev.group.position.x + prev.ext[0] * prev.s : 1e9);
-      const ex1 = Math.max(rig.group.position.x + rig.ext[1] * rig.s, prev ? prev.group.position.x + prev.ext[1] * prev.s : -1e9);
-      const w = (ex1 - ex0) * 1.12;
-      beam.visible = true; ring.visible = true;
-      beam.position.set((ex0 + ex1) / 2, scanY / UNIT, 0.02);
-      beam.scale.set(w, 70 / UNIT, 1);
-      beam.material.uniforms.uAmt.value = sstep(0, 0.08, prog) * (1 - sstep(0.9, 1, prog));
-      beam.material.uniforms.uTime.value = t;
-      ring.position.set(lerp(s0[0], s1[0], 0.5), 0.004, -0.005);
-      ring.scale.set(w * 0.95, 0.075, 1);
-      ring.material.uniforms.uAmt.value = Math.sin(Math.PI * clamp(prog * 1.15, 0, 1)) * 1.5;
-      ring.material.uniforms.uTime.value = t;
-      if (prog >= 1 && (tr.hold === null || tr.hold === undefined)) endTransition();
-    }
-
-    // tilt toward the pointer, drag turns further, then springs back
-    if (!S.dragging) {
-      const since = now - (S.releaseAt || 0);
-      if (since > 2200 || !S.releaseAt) S.dragYaw = moving ? damp(S.dragYaw, 0, 2.2, dt) : S.dragYaw;
-      else if (moving) { S.dragYaw = clamp(S.dragYaw + S.dragVel, -0.42, 0.42); S.dragVel *= 0.9; }
-    } else {
-      S.releaseAt = now;
-    }
-    const yaw = (moving ? yawT : 0) + S.dragYaw;
-    S.yaw = moving ? damp(S.yaw, yaw, 4, dt) : yaw;
-    S.pitch = moving ? damp(S.pitch, pitchT, 4, dt) : 0;
-    tilt.rotation.set(S.pitch, S.yaw, 0);
 
     // happy hop
-    let lift = 0, squash = 1;
+    let hop = 0;
     if (S.hopT >= 0 && moving) {
       S.hopT += dt;
       const h = S.hopT / 0.55;
-      if (h < 1) { lift = Math.sin(Math.PI * h) * 0.022; squash = 1 - 0.03 * Math.sin(Math.PI * clamp((h - 0.82) / 0.18, 0, 1)); }
-      else S.hopT = -1;
+      if (h < 1) hop = Math.sin(Math.PI * h) * 0.06; else S.hopT = -1;
     }
-    tilt.position.y = lift;
-    tilt.scale.set(1 / Math.sqrt(squash), squash, 1);
+    lift.position.y = hop;
 
-    placeHud(prog, prev);
+    placeHud();
   }
 
   function draw() {
@@ -1419,39 +1181,21 @@ function createApp(standAssets, opts) {
       S.ready = true;
       creature.classList.add("has-3d");
       mark("ready");
+      layout();   // the hint is placed against its .has-3d position
     }
   }
 
-  // HUD above the head, hint beside the chest
-  let hudW = 0, hudH = 0;
-  function placeHud(prog, prev) {
-    const rig = cur();
+  // HUD above the cat
+  function placeHud() {
     if (!hudW) { hudW = hud.offsetWidth; hudH = hud.offsetHeight; }
     const cr = creature.getBoundingClientRect(), sr = stage.getBoundingClientRect();
-    let [hx, hy] = poseToStage(rig, rig.D.hud[0], rig.D.hud[1], 0.04);
-    if (prev && prev !== rig) {
-      const [px, py] = poseToStage(prev, prev.D.hud[0], prev.D.hud[1], 0.04);
-      const e = easeInOut(prog);
-      hx = lerp(px, hx, e); hy = lerp(py, hy, e);
-    }
     const ox = sr.left - cr.left, oy = sr.top - cr.top;
-    let x = ox + hx - hudW * 0.3, y = oy + hy - hudH - 16;
+    const [hx, hy] = worldToStage(world, 0, 1.17, 0);
+    let x = ox + hx - hudW * 0.5, y = oy + hy - hudH;
     const minX = -cr.left + 8, maxX = vw - cr.left - hudW - 8;
     x = clamp(x, minX, maxX);
     hud.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
     tag.style.setProperty("--lead", clamp(ox + hx - x, 10, hudW - 40).toFixed(0) + "px");
-    if (hint && !creature.classList.contains("was-petted")) {
-      const [cx, cy] = poseToStage(rig, rig.D.hint[0], rig.D.hint[1], 0.05);
-      const hw = hint.offsetWidth || 90;
-      let hxp = ox + cx - hw - 14, hyp = oy + cy;
-      if (cr.left + hxp < 8) {
-        // no room left of the chest: beside the head instead, clear of the body
-        const [ax, ay] = poseToStage(rig, rig.D.hint2[0], rig.D.hint2[1], 0.05);
-        hxp = Math.min(ox + ax + 10, vw - cr.left - hw - 8);
-        hyp = oy + ay - (hint.offsetHeight || 30) / 2;
-      }
-      hint.style.transform = `translate(${hxp.toFixed(1)}px, ${hyp.toFixed(1)}px)`;
-    }
   }
 
   /* -------------------------------------------------------------- lifecycle */
@@ -1465,49 +1209,27 @@ function createApp(standAssets, opts) {
   });
   const onMotionChange = () => {
     if (motionOK()) start();
-    else {
-      stop();
-      if (S.trans) { S.trans.hold = null; S.trans.t0 = -1e9; }
-      requestRender();
-    }
+    else { stop(); requestRender(); }
   };
   if (reduceMQ.addEventListener) reduceMQ.addEventListener("change", onMotionChange);
   new MutationObserver(onMotionChange).observe(root, { attributes: true, attributeFilter: ["class"] });
-  if ("ResizeObserver" in window) new ResizeObserver(() => { hudW = 0; layout(); }).observe(creature);
-  window.addEventListener("resize", () => { hudW = 0; layout(); }, { passive: true });
+  if ("ResizeObserver" in window) {
+    const ro = new ResizeObserver(() => layout());
+    for (const el of [creature, hint, ...avoid]) if (el) ro.observe(el);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layout());
+  window.addEventListener("resize", layout, { passive: true });
 
-  buildPose("stand", standAssets).group.visible = true;
   layout();
   hud.classList.add("is-on");
   update(0, performance.now());
   draw();
   start();
 
-  // fetch the other poses once the page has settled, so a pose change never waits
-  const later = (fn, ms) => setTimeout(() => ("requestIdleCallback" in window ? window.requestIdleCallback(fn, { timeout: 4000 }) : fn()), ms);
-  later(() => { ensurePose("front").then(() => later(() => ensurePose("sit"), 300)).catch(() => {}); }, 1800);
-
-  // test hooks
+  // small hooks for automated checks and preview recordings
   creature.cat3d = {
-    pet, sound: purrSound, state: S, rigs, render: requestRender, layout,
-    setPose: (name, o) => setPose(name, o),
-    bbox: () => {
-      const r = cur(), sr = stage.getBoundingClientRect();
-      const x0 = r.group.position.x + r.ext[0] * r.s, x1 = r.group.position.x + r.ext[1] * r.s;
-      const a = worldToStage(x0, r.top * r.s, 0), b = worldToStage(x1, 0, 0);
-      return [Math.round(sr.left + a[0]), Math.round(sr.top + a[1]), Math.round(sr.left + b[0]), Math.round(sr.top + b[1])];
-    },
-    forceBlink: (frame, ms) => {
-      if (!frame) { S.blinkStart = performance.now(); start(); return; }
-      S.force = { frame, until: performance.now() + (ms || 2500) };
-      start();
-      requestRender();
-    },
-    release: () => {
-      S.force = null;
-      if (S.trans) { S.trans.hold = null; S.trans.t0 = performance.now() - TRANS_MS * 0.5; }
-      start();
-      requestRender();
-    },
+    pet, sound: purrSound, state: S,
+    setYaw: (deg) => { S.spinning = null; S.yaw = deg * DEG; S.idleTarget = deg * DEG; S.idleUntil = performance.now() + 60000; S.releaseAt = performance.now(); requestRender(); },
+    finishBuild: () => { S.buildStart = performance.now() - 5000; requestRender(); },
   };
 }

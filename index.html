@@ -17,7 +17,7 @@
   <meta property="og:image" content="https://msumalague.github.io/images/og-cover.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Mairene Sumalague, AI/ML Engineer and Software Engineer, with Kopicat, her cyborg cat, in a neon city">
+  <meta property="og:image:alt" content="Mairene Sumalague, AI/ML Engineer and Software Engineer, with Kopicat the hologram cat in a neon city">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Mairene Sumalague | AI/ML Engineer &amp; Software Engineer">
   <meta name="twitter:description" content="Machine learning and generative AI systems, plus the full-stack web apps and Flutter mobile apps around them.">
@@ -134,7 +134,8 @@
         <div class="scene__vignette"></div>
       </div>
 
-      <!-- Kopicat, the owner's cat as a cyborg, brought to life by js/cat3d.js. Click, tap, or press Enter to pet. -->
+      <!-- Kopicat, the owner's cat, as a 3D hologram (js/cat3d.js). The image is the fallback without WebGL.
+           Click, tap, or press Enter to pet. Drag him or use the arrow keys to turn him. -->
       <div class="creature" data-creature data-depth="0.5">
         <img class="cat-img" src="images/cat/kopi-stand.webp" srcset="images/cat/kopi-stand.webp 1x, images/cat/kopi-stand-hd.webp 2x" alt="" width="644" height="732" decoding="async">
         <button class="creature__pet" type="button" data-cat-pet aria-label="Pet Kopicat, the robot cat"></button>
@@ -154,8 +155,8 @@
             <span class="hero__title-line">Mairene</span>
             <span class="hero__title-line hero__title-line--accent">Sumalague</span>
           </h1>
-          <p class="hero__lead" data-intro="3">I design and build production AI systems and the web and mobile applications around them, from machine learning models and generative AI to full-stack products people use every day.</p>
-          <div class="hero__actions" data-intro="4">
+          <p class="hero__lead" data-intro="3" data-cat-avoid>I design and build production AI systems and the web and mobile applications around them, from machine learning models and generative AI to full-stack products people use every day.</p>
+          <div class="hero__actions" data-intro="4" data-cat-avoid>
             <a class="btn btn--primary" href="#projects">Explore projects <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
             <a class="btn btn--ghost" href="#contact">Get in touch</a>
           </div>
@@ -184,12 +185,12 @@
       </div>
 
       <div class="container hero__meta" data-intro="6">
-        <dl class="meta-strip">
+        <dl class="meta-strip" data-cat-avoid>
           <div><dt>Now</dt><dd>Lead ML Engineer, Triseed Software Inc</dd></div>
           <div><dt>Certified</dt><dd>Claude Certified Architect · 3× Oracle Cloud</dd></div>
         </dl>
         <a class="scroll-cue" href="#about"><span class="visually-hidden">Scroll to About</span><span class="scroll-cue__line" aria-hidden="true"></span></a>
-        <button class="motion-toggle" type="button" data-motion-toggle>
+        <button class="motion-toggle" type="button" data-motion-toggle data-cat-avoid>
           <svg class="motion-toggle__pause" aria-hidden="true"><use href="#i-pause"/></svg>
           <svg class="motion-toggle__play" aria-hidden="true"><use href="#i-play"/></svg>
           <span data-motion-label>Pause motion</span>
@@ -270,7 +271,7 @@
             <div class="prose" data-reveal>
               <p class="lead">I'm Mairene Sumalague, a machine learning engineer and software engineer who turns data into products people can depend on, from production AI to the web and mobile apps around it. I lead machine learning delivery for production platforms, designing classification and regression models, building generative AI and agentic workflows, and engineering the pipelines, retraining jobs, and dashboards that keep them reliable over time.</p>
               <p>My path into engineering started early. My school did not offer programming, so I taught myself HTML, CSS, and JavaScript in junior high and later picked up Java and Python on my own. Computer Engineering at Batangas State University then gave me both ends of the stack, from microprocessors and digital logic to software, data, and applied AI. That foundation still shapes how I work, and I am as comfortable tuning a model as I am building a React interface or a Flutter app, or wiring a Raspberry Pi or NVIDIA Jetson into a prototype.</p>
-              <p>I value clear ownership, fast learning, and systems that are dependable, well documented, and easy for a team to maintain. Away from the keyboard, I am usually planning my next trip, most often to Japan or China, which is where the neon skyline on this page comes from. The cyborg cat standing in that skyline is Kopicat, my own cat, named for his coffee latte coat and reimagined here as a robot.</p>
+              <p>I value clear ownership, fast learning, and systems that are dependable, well documented, and easy for a team to maintain. Away from the keyboard, I am usually planning my next trip, most often to Japan or China, which is where the neon skyline on this page comes from. The cat projected into that skyline is Kopicat, my own cat, named for his coffee latte coat and reimagined here as a cyborg hologram.</p>
             </div>
 
             <dl class="facts" data-reveal>
@@ -654,7 +655,8 @@
         <svg class="brand__mark" aria-hidden="true"><use href="#i-mark"/></svg>
         <span class="brand__name">Mairene Sumalague</span>
       </a>
-      <p class="site-footer__note">© <span data-year>2026</span> Mairene Sumalague. Built with HTML, CSS, vanilla JavaScript, and three.js.</p>
+      <p class="site-footer__note">© <span data-year>2026</span> Mairene Sumalague. Built with HTML, CSS, vanilla JavaScript, and three.js.
+        <span class="site-footer__credit">Kopicat's hologram is adapted from <a href="https://skfb.ly/pKuUt" target="_blank" rel="noopener noreferrer">“Siamese In Motion”</a> by <a href="https://sketchfab.com/restore50" target="_blank" rel="noopener noreferrer">restore50</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer license">CC BY 4.0</a>.</span></p>
       <ul class="social-row social-row--sm" aria-label="Profiles">
         <li><a class="icon-link" href="https://github.com/msumalague" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile (opens in a new tab)"><svg aria-hidden="true"><use href="#i-github"/></svg></a></li>
         <li><a class="icon-link" href="https://www.linkedin.com/in/mairene-sumalague-a81533431/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile (opens in a new tab)"><svg aria-hidden="true"><use href="#i-linkedin"/></svg></a></li>
