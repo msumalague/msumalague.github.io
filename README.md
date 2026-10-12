@@ -1,6 +1,6 @@
 # msumalague.github.io
 
-Personal portfolio of **Mairene Sumalague**, AI/ML Engineer and Web & Mobile Developer.
+Personal portfolio of **Mairene Sumalague**, AI/ML Engineer and Software Engineer.
 Live at <https://msumalague.github.io/>.
 
 A static site with no build step: plain HTML, CSS, and vanilla JavaScript, plus a self-hosted copy of three.js for the 3D cat, served by GitHub Pages from the `main` branch.

@@ -4,7 +4,8 @@
    adds .has-3d to .creature and the living image fades in over it.
    ========================================================================== */
 
-/* Layout anchor: exactly the cat image box (644 x 732). Paws rest near the bottom. */
+/* Layout anchor: exactly the standing cat image box (644 x 732, its paws on the bottom edge).
+   The sitting and front poses are placed against the same ground line by the module. */
 .creature[data-creature] {
   right: clamp(1.5rem, 7vw, 8rem);
   bottom: clamp(0.5rem, 2vh, 1.5rem);
@@ -30,7 +31,7 @@
   position: absolute; inset: 0;
   width: 100%; height: 100%; max-width: none;
   object-fit: contain;
-  transform-origin: 46% 97%;
+  transform-origin: 47% 99%;
   filter: drop-shadow(0 0 14px rgba(111, 140, 255, 0.28));
   animation: kopiBreathe 4.6s ease-in-out infinite;
 }
@@ -43,16 +44,18 @@
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(0.5px, -0.4px); }
 }
+/* Static cat: the "pet me" hint sits in the clear sky beside his head. */
+.creature[data-creature]:not(.has-3d) > .creature__hint { left: 47%; top: 15%; }
 .creature.has-3d > .cat-img {
   opacity: 0; visibility: hidden;
   transition: opacity 0.6s ease, visibility 0s linear 0.6s;
 }
 
-/* Render surface: larger than the anchor so tilt, the hop, glow and sparks never clip.
-   It never takes pointer input (the module hit-tests the cat's own pixels). */
+/* Render surface: larger than the anchor so tilt, the hop, glow, sparks and the wide sitting pose
+   never clip. It never takes pointer input (the module hit-tests the cat's own pixels). */
 .creature__stage {
   position: absolute;
-  left: -38%; right: -38%; top: -26%; bottom: -16%;
+  left: -50%; right: -50%; top: -26%; bottom: -16%;
   z-index: 1;
   pointer-events: none;
   opacity: 0;
@@ -102,7 +105,8 @@
 
 /* "pet me" hint, placed by the module beside the chest */
 .creature.has-3d .creature__hint { left: 0; top: 0; z-index: 2; will-change: transform; }
-.creature.was-petted .creature__hint { animation: none; opacity: 0; transition: opacity 0.3s; }
+.creature.was-petted .creature__hint,
+.creature.is-sitting .creature__hint { animation: none; opacity: 0; transition: opacity 0.3s; }
 
 /* HUD above the head (positioned by JS): detection tag plus the purr mute button. */
 .cat3d-hud {
@@ -146,6 +150,17 @@
   box-shadow: 0 0 18px rgba(183, 148, 255, 0.4), inset 0 0 10px rgba(183, 148, 255, 0.16);
 }
 .cat3d-tag.is-mood::before { background: #b794ff; box-shadow: 0 0 8px #b794ff; }
+
+/* A pose change re-materializes the cat: the tag flickers with a short chromatic split. */
+.cat3d-hud.is-glitch .cat3d-tag { animation: kopiGlitch 0.56s steps(1, end) both; }
+@keyframes kopiGlitch {
+  0% { text-shadow: 2px 0 rgba(255, 70, 200, 0.85), -2px 0 rgba(80, 200, 255, 0.85); transform: translateX(1px); }
+  14% { text-shadow: -3px 0 rgba(255, 70, 200, 0.8), 3px 0 rgba(80, 200, 255, 0.8); transform: translateX(-2px); opacity: 0.7; }
+  28% { text-shadow: 1px 0 rgba(255, 70, 200, 0.6), -1px 0 rgba(80, 200, 255, 0.6); transform: none; opacity: 1; }
+  72% { text-shadow: none; transform: none; }
+  84% { text-shadow: -2px 0 rgba(255, 70, 200, 0.75), 2px 0 rgba(80, 200, 255, 0.75); transform: translateX(1px); }
+  100% { text-shadow: none; transform: none; }
+}
 
 /* Purr mute toggle: a small speaker attached to the tag. */
 .cat3d-mute {
@@ -207,9 +222,11 @@ html.cat3d-grabbing, html.cat3d-grabbing * {
 @media (prefers-reduced-motion: reduce) {
   .creature[data-creature] > .cat-img, .creature.is-purring > .cat-img { animation: none; }
   .creature__stage, .cat3d-hud, .cat3d-tag, .cat3d-mute, .creature.has-3d > .cat-img { transition: none; }
+  .cat3d-hud.is-glitch .cat3d-tag { animation: none; }
 }
 .motion-paused .creature[data-creature] > .cat-img { animation-play-state: paused; }
 .motion-paused .creature__stage, .motion-paused .cat3d-hud, .motion-paused .cat3d-tag { transition: none; }
+.motion-paused .cat3d-hud.is-glitch .cat3d-tag { animation: none; }
 
 @media print {
   .creature__stage, .cat3d-hud { display: none !important; }
