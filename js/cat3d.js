@@ -65,23 +65,20 @@ const wrapPi = (a) => { a = (a + Math.PI) % TAU; if (a < 0) a += TAU; return a -
 const creature = document.querySelector("[data-creature]");
 let THREE = null;
 
+// Start right away: the static image stays hidden while the hologram loads.
 if (creature && !creature.classList.contains("has-3d")) {
-  const go = () => {
-    const run = () => {
-      boot().catch((err) => {
-        mark("error");
-        try { window.__cat3dError = String((err && err.stack) || err); } catch (e) { /* ignore */ }
-      });
-    };
-    if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 1500 });
-    else setTimeout(run, 200);
-  };
-  if (document.readyState === "complete") go();
-  else window.addEventListener("load", go, { once: true });
+  boot().catch((err) => {
+    mark("error");
+    try { window.__cat3dError = String((err && err.stack) || err); } catch (e) { /* ignore */ }
+  });
 }
 
 function mark(state) {
-  try { creature.dataset.cat3d = state; } catch (e) { /* ignore */ }
+  try {
+    creature.dataset.cat3d = state;
+    // no hologram on this device: show the static image instead
+    if (state !== "loading" && state !== "ready") creature.classList.add("cat-static");
+  } catch (e) { /* ignore */ }
 }
 
 function canUseWebGL2(allowSoftware) {

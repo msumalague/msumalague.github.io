@@ -652,6 +652,10 @@
       }, 2600);
     }
 
+    // js/cat3d.js hides the static image while the hologram loads. If the module never arrives
+    // (blocked or failed to download), show the image after a while.
+    setTimeout(function () { if (!is3d() && root.dataset.cat3d !== "ready") root.classList.add("cat-static"); }, 12000);
+
     if (petBtn) {
       petBtn.addEventListener("click", pet);
       petBtn.addEventListener("pointerenter", function () { hovering = true; setNoticing(); });

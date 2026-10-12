@@ -26,7 +26,11 @@
   }
 }
 
-/* Static fallback image (no WebGL, or before the module is ready). */
+/* Static fallback image. With JavaScript on it stays hidden while the hologram loads, so the old
+   look never flashes, and shows only when 3D is unavailable (.cat-static, set by js/cat3d.js or by
+   the safety timer in js/main.js). */
+.js .creature[data-creature]:not(.has-3d):not(.cat-static) > .cat-img,
+.js .creature[data-creature]:not(.has-3d):not(.cat-static) > .creature__hint { visibility: hidden; }
 .creature[data-creature] > .cat-img {
   position: absolute; inset: 0;
   width: 100%; height: 100%; max-width: none;
@@ -229,5 +233,5 @@ html.cat3d-grabbing, html.cat3d-grabbing * {
 
 @media print {
   .creature__stage, .cat3d-hud { display: none !important; }
-  .creature.has-3d > .cat-img { opacity: 1; visibility: visible; }
+  .creature[data-creature] > .cat-img { opacity: 1 !important; visibility: visible !important; }
 }
