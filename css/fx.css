@@ -309,6 +309,8 @@ html.motion-paused, .fx-off { --fx-play: paused; }
 .certs .cert:nth-child(2) .cert__badge::after { animation-delay: 0.45s; }
 .certs .cert:nth-child(3) .cert__badge::after { animation-delay: 0.9s; }
 .certs .cert:nth-child(4) .cert__badge::after { animation-delay: 1.35s; }
+.certs .cert:nth-child(5) .cert__badge::after { animation-delay: 1.8s; }
+.certs .cert:nth-child(6) .cert__badge::after { animation-delay: 2.25s; }
 @keyframes fxShimmer { 0%, 62% { transform: translateX(-120%); } 82%, 100% { transform: translateX(120%); } }
 .certs .cert::before {
   content: ""; position: absolute; inset: -1px; pointer-events: none; padding: 1px;
